@@ -5,492 +5,187 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>My English Songs</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --green: #1DB954; --green-dark: #158a3e;
-    --bg: #121212; --bg2: #1e1e1e; --bg3: #2a2a2a;
-    --text: #f0f0f0; --text2: #aaaaaa;
-    --border: rgba(255,255,255,0.12); --radius: 12px;
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; display: flex;
-    flex-direction: column; max-width: 520px; margin: 0 auto;
-  }
-
-  /* LOGIN */
-  #loginScreen {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    min-height: 100vh; padding: 40px 30px; text-align: center;
-  }
-  #loginScreen h1 { color: #fff; font-size: 28px; margin-bottom: 12px; }
-  #loginScreen p  { color: var(--text2); font-size: 17px; margin-bottom: 28px; line-height: 1.6; max-width: 300px; }
-  .btn-spotify {
-    display: block; background: var(--green); color: #fff;
-    text-decoration: none; padding: 18px 40px; border-radius: 50px;
-    font-size: 19px; font-weight: 700; width: 100%; max-width: 320px;
-  }
-  .btn-spotify:active { background: var(--green-dark); }
-
-  /* APP */
-  #appScreen { display: none; flex-direction: column; flex: 1; }
-  #appScreen.visible { display: flex; }
-
-  .header {
-    background: #000; padding: 16px 16px 12px;
-    position: sticky; top: 0; z-index: 10;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .header h1 { color: #fff; font-size: 20px; font-weight: 700; }
-  .header h1 span { color: var(--green); }
-  .header-sub { color: var(--text2); font-size: 13px; margin-top: 3px; }
-  .btn-logout { background: none; border: 1px solid var(--border); color: var(--text2); padding: 7px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
-
-  #nowPlaying { background: #000; border-bottom: 1px solid var(--border); padding: 10px 14px; display: none; align-items: center; gap: 10px; }
-  #nowPlaying.visible { display: flex; }
-  #npImg { width: 46px; height: 46px; border-radius: 6px; object-fit: cover; background: var(--bg3); flex-shrink: 0; }
-  #npInfo { flex: 1; min-width: 0; }
-  #npTitle  { font-size: 15px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #npArtist { font-size: 13px; color: var(--text2); margin-top: 2px; }
-  .np-btn { background: none; border: none; color: var(--green); font-size: 24px; cursor: pointer; padding: 4px; }
-
-  .search-wrap { padding: 12px 14px 8px; background: var(--bg); border-bottom: 1px solid var(--border); position: sticky; top: 65px; z-index: 8; }
-  .search-input-wrap { display: flex; align-items: center; gap: 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 0 14px; }
-  #searchInput { flex: 1; border: none; background: transparent; padding: 14px 4px; font-size: 18px; color: var(--text); outline: none; }
-  #searchInput::placeholder { color: var(--text2); }
-  #clearBtn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 20px; display: none; padding: 4px; }
-  .filter-row { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .chip { flex-shrink: 0; font-size: 14px; padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); color: var(--text2); cursor: pointer; background: var(--bg3); white-space: nowrap; font-weight: 500; }
-  .chip.active { background: var(--green); color: #fff; border-color: var(--green); }
-
-  .count-bar { padding: 9px 16px; font-size: 14px; color: var(--text2); border-bottom: 1px solid var(--border); font-weight: 500; }
-
-  #songList { flex: 1; overflow-y: auto; padding-bottom: 100px; }
-  .song-item { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--border); }
-  .song-item:active { background: var(--bg2); }
-  .song-item.playing .song-title { color: var(--green); }
-  .folha-badge { min-width: 34px; height: 34px; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text2); flex-shrink: 0; font-weight: 600; }
-  .song-body { flex: 1; min-width: 0; }
-  .song-title { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-  .song-artist { font-size: 15px; color: var(--text2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .song-tags { display: flex; gap: 6px; margin-top: 5px; }
-  .tag { font-size: 12px; padding: 3px 9px; border-radius: 10px; background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
-  .btn-play { width: 44px; height: 44px; border-radius: 50%; background: var(--green); border: none; cursor: pointer; font-size: 18px; color: #fff; flex-shrink: 0; }
-  .btn-play:active { transform: scale(0.92); }
-  .btn-play.loading { background: var(--bg3); }
-
-  .loader { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 60px auto; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .state-msg { text-align: center; padding: 60px 28px; color: var(--text2); font-size: 17px; line-height: 1.8; }
-
-  .bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; background: #000; border-top: 1px solid var(--border); padding: 10px 14px; display: flex; gap: 10px; z-index: 10; }
-  .btn-green { flex: 1; background: var(--green); color: #fff; border: none; border-radius: var(--radius); padding: 13px 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
-  .btn-green:active { background: var(--green-dark); }
-  .btn-green:disabled { opacity: 0.5; pointer-events: none; }
-  .btn-outline { flex: 1; background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 8px; font-size: 15px; font-weight: 500; cursor: pointer; }
-
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg2); border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 520px; }
-  .modal h2 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 6px; }
-  .modal p  { font-size: 15px; color: var(--text2); margin-bottom: 20px; }
-  .modal input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; font-size: 17px; color: #fff; outline: none; margin-bottom: 14px; }
-  .modal-btns { display: flex; gap: 10px; }
-  .modal-btns button { flex: 1; padding: 14px; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; border: none; }
-  .modal-confirm { background: var(--green); color: #fff; }
-  .modal-cancel  { background: var(--bg3); color: var(--text2); }
-
-  #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: #fff; padding: 12px 22px; border-radius: 24px; font-size: 15px; font-weight: 500; opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 100; max-width: 90%; text-align: center; }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  mark { background: rgba(29,185,84,0.3); color: inherit; border-radius: 3px; padding: 0 2px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--green:#1DB954;--bg:#121212;--bg2:#1e1e1e;--bg3:#2a2a2a;--text:#f0f0f0;--text2:#aaaaaa;--border:rgba(255,255,255,0.12);--radius:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
+.header{background:#000;padding:16px 16px 12px;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border)}
+.header h1{color:#fff;font-size:22px;font-weight:700}.header h1 span{color:var(--green)}
+.header-sub{color:var(--text2);font-size:14px;margin-top:3px}
+.search-wrap{padding:12px 14px 8px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:68px;z-index:9}
+.search-box{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:0 14px}
+#searchInput{flex:1;border:none;background:transparent;padding:14px 4px;font-size:19px;color:var(--text);outline:none}
+#searchInput::placeholder{color:var(--text2)}
+#clearBtn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:22px;display:none;padding:4px}
+.filter-row{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;font-size:15px;padding:7px 16px;border-radius:20px;border:1px solid var(--border);color:var(--text2);cursor:pointer;background:var(--bg3);white-space:nowrap;font-weight:500}
+.chip.active{background:var(--green);color:#fff;border-color:var(--green)}
+.count-bar{padding:10px 16px;font-size:14px;color:var(--text2);border-bottom:1px solid var(--border);font-weight:500;display:flex;align-items:center;justify-content:space-between}
+.btn-copiar-tudo{background:var(--green);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:14px;font-weight:600;cursor:pointer}
+#songList{flex:1;overflow-y:auto;padding-bottom:20px}
+.song-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border)}
+.song-item:active{background:var(--bg2)}
+.folha-badge{min-width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);flex-shrink:0;font-weight:600}
+.song-body{flex:1;min-width:0}
+.song-title{font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.song-artist{font-size:16px;color:var(--text2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-tags{display:flex;gap:6px;margin-top:5px}
+.tag{font-size:12px;padding:3px 9px;border-radius:10px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-copiar{width:46px;height:46px;border-radius:50%;background:var(--green);border:none;cursor:pointer;font-size:20px;color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.btn-copiar:active{transform:scale(0.92)}
+.btn-copiar.copiado{background:#0a7a35}
+.loader{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;margin:60px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-msg{text-align:center;padding:60px 28px;color:var(--text2);font-size:17px;line-height:1.8}
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#1DB954;color:#fff;padding:12px 24px;border-radius:24px;font-size:15px;font-weight:600;opacity:0;transition:all 0.25s;pointer-events:none;z-index:100;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+mark{background:rgba(29,185,84,0.3);color:inherit;border-radius:3px;padding:0 2px}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-  <h1>🎵 My English Songs</h1>
-  <p>Conecte sua conta Spotify Premium para ouvir suas músicas favoritas</p>
-  <a class="btn-spotify" id="btnLogin" href="#">Entrar com Spotify</a>
+<div class="header">
+  <h1>🎵 My <span>English</span> Songs</h1>
+  <div class="header-sub" id="headerSub">326 músicas • 1933–1988</div>
 </div>
 
-<!-- APP -->
-<div id="appScreen">
-  <div class="header">
-    <div>
-      <h1>🎵 My <span>English</span> Songs</h1>
-      <div class="header-sub" id="headerSub">Carregando...</div>
-    </div>
-    <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+<div class="search-wrap">
+  <div class="search-box">
+    <span style="font-size:22px;color:var(--text2)">🔍</span>
+    <input type="search" id="searchInput" placeholder="Buscar música ou cantor..." autocomplete="off"/>
+    <button id="clearBtn" onclick="clearSearch()">✕</button>
   </div>
-
-  <div id="nowPlaying">
-    <img id="npImg" src="" alt="">
-    <div id="npInfo">
-      <div id="npTitle">—</div>
-      <div id="npArtist">—</div>
-    </div>
-    <button class="np-btn" onclick="abrirNoSpotify()">↗</button>
-  </div>
-
-  <div class="search-wrap">
-    <div class="search-input-wrap">
-      <span style="font-size:20px;color:var(--text2)">🔍</span>
-      <input type="search" id="searchInput" placeholder="Buscar música ou cantor..." autocomplete="off"/>
-      <button id="clearBtn" onclick="clearSearch()">✕</button>
-    </div>
-    <div class="filter-row">
-      <span class="chip active" onclick="setFiltro('todos',this)">Todos</span>
-      <span class="chip" onclick="setFiltro('musica',this)">Música</span>
-      <span class="chip" onclick="setFiltro('cantor',this)">Cantor</span>
-      <span class="chip" onclick="setFiltro('ano',this)">Ano</span>
-    </div>
-  </div>
-
-  <div class="count-bar" id="countBar">Carregando músicas...</div>
-  <div id="songList"><div class="loader"></div></div>
-
-  <div class="bottom-bar">
-    <button class="btn-green" id="btnPlaylist" onclick="abrirModalPlaylist()">🎶 Criar Playlist</button>
-    <button class="btn-outline" onclick="verPlanilha()">📊 Planilha</button>
+  <div class="filter-row">
+    <span class="chip active" onclick="setFiltro('todos',this)">Todos</span>
+    <span class="chip" onclick="setFiltro('musica',this)">Música</span>
+    <span class="chip" onclick="setFiltro('cantor',this)">Cantor</span>
+    <span class="chip" onclick="setFiltro('ano',this)">Ano</span>
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <h2>🎶 Criar Playlist</h2>
-    <p id="modalDesc"></p>
-    <input type="text" id="playlistNome" placeholder="Nome da playlist..."/>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="fecharModal()">Cancelar</button>
-      <button class="modal-confirm" onclick="confirmarCriarPlaylist()">Criar no Spotify</button>
-    </div>
-  </div>
+<div class="count-bar">
+  <span id="countBar">326 músicas no total</span>
+  <button class="btn-copiar-tudo" onclick="copiarTodos()">📋 Copiar lista</button>
 </div>
 
+<div id="songList"><div class="loader"></div></div>
 <div id="toast"></div>
 
 <script>
-  // ── Configuração ──────────────────────────────────────
-  var CLIENT_ID     = '95df5cea46f14e1998939e39b1bf24da';
-  var CLIENT_SECRET = '89bc8d3b5068472b80db564b251ddb8f';
-  var CALLBACK_URL  = 'https://rogeriomendes9825-del.github.io/english-songs/callback.html';
-  var APPS_URL      = 'https://script.google.com/macros/s/AKfycbxjAdBMlqGrRy4OOTNPVz8NHxZD4WUZ33GPFiYTXR3gV1jaKPLDdYu0KknljL2OlJ8r/exec';
-  var SCOPES        = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-modify-playback-state user-read-playback-state';
+var MUSICAS = [{"folha": "35", "musica": "Canada", "cantor": "Pilot", "aula": "62", "ano": "1974"}, {"folha": "36", "musica": "Conversation", "cantor": "Morris Albert", "aula": "79", "ano": "1975"}, {"folha": "37", "musica": "C'est la vie", "cantor": "Emerson Lake and Palmer", "aula": "124", "ano": "1977"}, {"folha": "38", "musica": "Cast your fate to the wind", "cantor": "Johnny Rivers", "aula": "163", "ano": "1965"}, {"folha": "39", "musica": "Come home for the winter", "cantor": "Andy Gibb", "aula": "187", "ano": "1978"}, {"folha": "40", "musica": "Close to you", "cantor": "Carpenters", "aula": "201", "ano": "1970"}, {"folha": "41", "musica": "Copacabana", "cantor": "Barry Manilow", "aula": "205", "ano": "1978"}, {"folha": "42", "musica": "Count on me", "cantor": "Jefferson Starship", "aula": "211", "ano": "1978"}, {"folha": "43", "musica": "Can't take my eyes off of you", "cantor": "Engelbert Humperdinck", "aula": "231", "ano": "1967"}, {"folha": "44", "musica": "Camelita", "cantor": "Linda Ronstadt", "aula": "271", "ano": "1976"}, {"folha": "45", "musica": "Crazy little thing called love", "cantor": "Queen", "aula": "323", "ano": "1979"}, {"folha": "46", "musica": "Dance while the music still goes on", "cantor": "ABBA", "aula": "20", "ano": "1974"}, {"folha": "47", "musica": "Don't let me cry", "cantor": "Bobby Crimson", "aula": "21", "ano": "1977"}, {"folha": "48", "musica": "Don't wanna say goodbye", "cantor": "Eric Clapton", "aula": "54", "ano": "1977"}, {"folha": "49", "musica": "Dancing queen", "cantor": "ABBA", "aula": "66", "ano": "1976"}, {"folha": "50", "musica": "Dance little lady dance", "cantor": "Brenda Taylor", "aula": "74", "ano": "1976"}, {"folha": "51", "musica": "Don't expect me to be your friend", "cantor": "Lobo", "aula": "103", "ano": "1972"}, {"folha": "52", "musica": "Dock of the Bay", "cantor": "Otis Redding", "aula": "105", "ano": "1968"}, {"folha": "53", "musica": "Don't leave me this way", "cantor": "Thelma Houston", "aula": "131", "ano": "1976"}, {"folha": "54", "musica": "Don't tell me goodnight", "cantor": "Lobo", "aula": "147", "ano": "1973"}, {"folha": "55", "musica": "Don't it make my brown eyes blue", "cantor": "Crystal Gayle", "aula": "164", "ano": "1977"}, {"folha": "56", "musica": "Don't fence me in", "cantor": "Bing Crosby", "aula": "188", "ano": "1944"}, {"folha": "57", "musica": "Dance a little bit closer", "cantor": "Charo", "aula": "192", "ano": "1977"}, {"folha": "58", "musica": "Don't stop", "cantor": "Fleetwood Mac", "aula": "195", "ano": "1977"}, {"folha": "59", "musica": "Dust in the wind", "cantor": "Kansas", "aula": "213", "ano": "1977"}, {"folha": "60", "musica": "Dancing the night away", "cantor": "Leo Sayer", "aula": "228", "ano": "1977"}, {"folha": "61", "musica": "Don't think twice it's all right", "cantor": "Peter Paul and Mary", "aula": "247", "ano": "1963"}, {"folha": "62", "musica": "Dreaming", "cantor": "Liverpool Express", "aula": "267", "ano": "1976"}, {"folha": "63", "musica": "Deeper than the night", "cantor": "Olivia Newton-John", "aula": "311", "ano": "1979"}, {"folha": "64", "musica": "Do that to me one more time", "cantor": "Captain and Tennille", "aula": "329", "ano": "1979"}, {"folha": "65", "musica": "Don't ask me why", "cantor": "Billy Joel", "aula": "347", "ano": "1980"}, {"folha": "66", "musica": "Do you miss me", "cantor": "Morris Albert", "aula": "358", "ano": "1975"}, {"folha": "67", "musica": "Everybody loves somebody", "cantor": "Morris Albert", "aula": "46", "ano": "1964"}, {"folha": "68", "musica": "Everybody's talking", "cantor": "Ray Conniff", "aula": "89", "ano": "1969"}, {"folha": "69", "musica": "Every man must have a dream", "cantor": "Liverpool Express", "aula": "100", "ano": "1976"}, {"folha": "70", "musica": "El condor pasa", "cantor": "Simon and Garfunkel", "aula": "151", "ano": "1970"}, {"folha": "71", "musica": "Emotion", "cantor": "Samantha Sang", "aula": "151", "ano": "1977"}, {"folha": "72", "musica": "Easy to love", "cantor": "Leo Sayer", "aula": "184", "ano": "1976"}, {"folha": "73", "musica": "Everybody ought to be in love", "cantor": "Frank Sinatra", "aula": "191", "ano": "1955"}, {"folha": "74", "musica": "El Lute", "cantor": "Boney M", "aula": "237", "ano": "1979"}, {"folha": "75", "musica": "Find yourself a rainbow", "cantor": "Slade", "aula": "14", "ano": "1974"}, {"folha": "76", "musica": "From me to you", "cantor": "Beatles", "aula": "69", "ano": "1963"}, {"folha": "77", "musica": "Fever", "cantor": "Elvis Presley", "aula": "128", "ano": "1960"}, {"folha": "78", "musica": "From me to you", "cantor": "The Boones", "aula": "216", "ano": "1963"}, {"folha": "79", "musica": "Fantasy", "cantor": "Earth Wind and Fire", "aula": "296", "ano": "1977"}, {"folha": "80", "musica": "Forever young", "cantor": "Alphaville", "aula": "357", "ano": "1984"}, {"folha": "81", "musica": "Girl you'll be my woman soon", "cantor": "Biddu Orchestra", "aula": "183", "ano": "1967"}, {"folha": "82", "musica": "Green door", "cantor": "Crystal Gayle", "aula": "238", "ano": "1977"}, {"folha": "83", "musica": "Grease", "cantor": "Frankie Valli", "aula": "244", "ano": "1978"}, {"folha": "84", "musica": "Gone long gone", "cantor": "Chicago", "aula": "282", "ano": "1979"}, {"folha": "85", "musica": "Goodnight tonight", "cantor": "Wings", "aula": "284", "ano": "1979"}, {"folha": "86", "musica": "Got a feeling", "cantor": "Patrick Junet", "aula": "294", "ano": "1978"}, {"folha": "87", "musica": "Gonna get along without you now", "cantor": "Viola Wills", "aula": "326", "ano": "1979"}, {"folha": "88", "musica": "Hey won't you play somebody done somebody wrong song", "cantor": "B.J. Thomas", "aula": "1", "ano": "1975"}, {"folha": "89", "musica": "Hitching a ride in the moonlight", "cantor": "Middle of the road", "aula": "13", "ano": "1973"}, {"folha": "90", "musica": "Happy", "cantor": "Michael Jackson", "aula": "13", "ano": "1972"}, {"folha": "91", "musica": "Hey boy", "cantor": "Tina Charles", "aula": "41", "ano": "1976"}, {"folha": "92", "musica": "Hands of time", "cantor": "Perry Como", "aula": "59", "ano": "1971"}, {"folha": "93", "musica": "Hold back the water", "cantor": "Bachman Turner Overdrive", "aula": "76", "ano": "1975"}, {"folha": "94", "musica": "Hello Nadine", "cantor": "Mungo Jerry", "aula": "88", "ano": "1973"}, {"folha": "95", "musica": "Hello Mary Lou", "cantor": "Loggins and Messina", "aula": "93", "ano": "1961"}, {"folha": "96", "musica": "How wonderful to know", "cantor": "B and C", "aula": "116", "ano": "1974"}, {"folha": "97", "musica": "Hey baby", "cantor": "Ringo Starr", "aula": "130", "ano": "1976"}, {"folha": "98", "musica": "Hasta Manana", "cantor": "ABBA", "aula": "137", "ano": "1974"}, {"folha": "99", "musica": "How deep is your love", "cantor": "Bee Gees", "aula": "138", "ano": "1977"}, {"folha": "100", "musica": "He ain't heavy he's my brother", "cantor": "Hollies", "aula": "141", "ano": "1969"}, {"folha": "101", "musica": "Help me", "cantor": "Elvis Presley", "aula": "149", "ano": "1974"}, {"folha": "102", "musica": "Hotel California", "cantor": "Eagles", "aula": "192", "ano": "1976"}, {"folha": "103", "musica": "Hopelessly devoted to you", "cantor": "Olivia Newton-John", "aula": "202", "ano": "1978"}, {"folha": "104", "musica": "Hole in your soul", "cantor": "ABBA", "aula": "210", "ano": "1977"}, {"folha": "105", "musica": "Happy day", "cantor": "Roberta Flack", "aula": "248", "ano": "1969"}, {"folha": "106", "musica": "Honesty", "cantor": "Billy Joel", "aula": "250", "ano": "1978"}, {"folha": "107", "musica": "How you gonna see me now", "cantor": "Alice Cooper", "aula": "254", "ano": "1978"}, {"folha": "108", "musica": "Heaven knows", "cantor": "Donna Summer", "aula": "302", "ano": "1978"}, {"folha": "109", "musica": "Hold the line", "cantor": "Toto", "aula": "304", "ano": "1978"}, {"folha": "110", "musica": "Help", "cantor": "Dolly Parton", "aula": "306", "ano": "1979"}, {"folha": "111", "musica": "Heart of glass", "cantor": "Blondie", "aula": "308", "ano": "1978"}, {"folha": "112", "musica": "Hold me tight", "cantor": "Anne Murray", "aula": "310", "ano": "1978"}, {"folha": "113", "musica": "He can't help it if he's not you", "cantor": "Anne Murray", "aula": "341", "ano": "1979"}, {"folha": "114", "musica": "If", "cantor": "Frank Sinatra", "aula": "5", "ano": "1971"}, {"folha": "115", "musica": "It doesn't matter much to me", "cantor": "Bee Gees", "aula": "11", "ano": "1969"}, {"folha": "116", "musica": "I can dream can't I", "cantor": "Carpenters", "aula": "28", "ano": "1949"}, {"folha": "117", "musica": "I'm caught between goodbye and I love you", "cantor": "Carpenters", "aula": "31", "ano": "1973"}, {"folha": "118", "musica": "I write the songs", "cantor": "Barry White", "aula": "37", "ano": "1975"}, {"folha": "119", "musica": "It don't come easy", "cantor": "Ringo Starr", "aula": "38", "ano": "1971"}, {"folha": "120", "musica": "I'll go where your music takes me", "cantor": "Jimmy James", "aula": "50", "ano": "1976"}, {"folha": "121", "musica": "I do I do I do", "cantor": "ABBA", "aula": "52", "ano": "1975"}, {"folha": "122", "musica": "I go to Rio", "cantor": "P. Allen", "aula": "55", "ano": "1976"}, {"folha": "123", "musica": "I never cry", "cantor": "Alice Cooper", "aula": "64", "ano": "1976"}, {"folha": "124", "musica": "I don't want to lose you", "cantor": "Spinners", "aula": "65", "ano": "1974"}, {"folha": "125", "musica": "It's now or never", "cantor": "Elvis Presley", "aula": "86", "ano": "1960"}, {"folha": "126", "musica": "I'm coming home", "cantor": "The Stylistics", "aula": "91", "ano": "1974"}, {"folha": "127", "musica": "It's not for me to say", "cantor": "Johnny Mathis", "aula": "92", "ano": "1957"}, {"folha": "128", "musica": "I loved you more than ever", "cantor": "Blood Sweat and Tears", "aula": "107", "ano": "1973"}, {"folha": "129", "musica": "I left my heart in San Francisco", "cantor": "Tony Bennett", "aula": "109", "ano": "1962"}, {"folha": "130", "musica": "I don't want to go on without you", "cantor": "Nazareth", "aula": "114", "ano": "1975"}, {"folha": "131", "musica": "I can help", "cantor": "Billy Swan", "aula": "120", "ano": "1974"}, {"folha": "132", "musica": "I could dance all night", "cantor": "Archie Bell", "aula": "121", "ano": "1975"}, {"folha": "133", "musica": "In the Ghetto", "cantor": "Elvis Presley", "aula": "122", "ano": "1969"}, {"folha": "134", "musica": "I'm in you", "cantor": "Peter Frampton", "aula": "135", "ano": "1977"}, {"folha": "135", "musica": "I remember yesterday", "cantor": "Donna Summer", "aula": "136", "ano": "1977"}, {"folha": "136", "musica": "I'll never fall in love again", "cantor": "Bing Crosby", "aula": "162", "ano": "1969"}, {"folha": "137", "musica": "In my life", "cantor": "Beatles", "aula": "167", "ano": "1965"}, {"folha": "138", "musica": "I am I said", "cantor": "Neil Diamond", "aula": "174", "ano": "1971"}, {"folha": "139", "musica": "I just wanna be your everything", "cantor": "Andy Gibb", "aula": "176", "ano": "1977"}, {"folha": "140", "musica": "It's a heartache", "cantor": "Bonnie Tyler", "aula": "197", "ano": "1977"}, {"folha": "141", "musica": "I sing the songs", "cantor": "Frank Sinatra", "aula": "200", "ano": "1975"}, {"folha": "142", "musica": "It's so easy", "cantor": "Linda Ronstadt", "aula": "222", "ano": "1977"}, {"folha": "143", "musica": "I never will marry", "cantor": "Linda Ronstadt", "aula": "232", "ano": "1976"}, {"folha": "144", "musica": "I wanna come back", "cantor": "Crystal Gayle", "aula": "234", "ano": "1978"}, {"folha": "145", "musica": "I loved you", "cantor": "Freddy Cole", "aula": "242", "ano": "1977"}, {"folha": "146", "musica": "If you can't give me love", "cantor": "Suzy Quatro", "aula": "249", "ano": "1978"}, {"folha": "147", "musica": "I believe I'm gonna love you", "cantor": "Frank Sinatra", "aula": "252", "ano": "1978"}, {"folha": "148", "musica": "It's just a matter of time", "cantor": "Debby Boone", "aula": "277", "ano": "1978"}, {"folha": "149", "musica": "I will survive", "cantor": "Gloria Gaynor", "aula": "281", "ano": "1978"}, {"folha": "150", "musica": "In the navy", "cantor": "Village People", "aula": "286", "ano": "1979"}, {"folha": "151", "musica": "I believe you", "cantor": "Carpenters", "aula": "295", "ano": "1979"}, {"folha": "152", "musica": "I don't care", "cantor": "Elton John", "aula": "302", "ano": "1979"}, {"folha": "153", "musica": "I have a dream", "cantor": "ABBA", "aula": "309", "ano": "1979"}, {"folha": "154", "musica": "If not for you", "cantor": "Ray Conniff", "aula": "313", "ano": "1970"}, {"folha": "155", "musica": "I just fall in love", "cantor": "Anne Murray", "aula": "315", "ano": "1979"}, {"folha": "156", "musica": "I wish that I could hurt that way again", "cantor": "Kenny Rogers", "aula": "316", "ano": "1979"}, {"folha": "157", "musica": "I don't want to walk without you", "cantor": "Barry Manilow", "aula": "317", "ano": "1979"}, {"folha": "158", "musica": "I'd rather leave while I'm in love", "cantor": "Rita Coolidge", "aula": "327", "ano": "1979"}, {"folha": "159", "musica": "I don't wanna talk about it", "cantor": "Rod Stewart", "aula": "339", "ano": "1977"}, {"folha": "160", "musica": "I'm a believer", "cantor": "Neil Diamond", "aula": "342", "ano": "1966"}, {"folha": "161", "musica": "In no time at all", "cantor": "Ronnie Milsap", "aula": "344", "ano": "1979"}, {"folha": "162", "musica": "I can't help it", "cantor": "Andy Gibb", "aula": "352", "ano": "1979"}, {"folha": "163", "musica": "Just walking in the rain", "cantor": "Johnny Ray", "aula": "82", "ano": "1956"}, {"folha": "164", "musica": "Jailhouse rock", "cantor": "Elvis Presley", "aula": "98", "ano": "1957"}, {"folha": "165", "musica": "Just the way you are", "cantor": "Billy Joel", "aula": "194", "ano": "1977"}, {"folha": "166", "musica": "Just one look", "cantor": "Hollies", "aula": "256", "ano": "1964"}, {"folha": "167", "musica": "Just when I needed you most", "cantor": "Randy VanWarmer", "aula": "331", "ano": "1979"}, {"folha": "168", "musica": "Kung fu fighting", "cantor": "Carl Douglas", "aula": "27", "ano": "1974"}, {"folha": "169", "musica": "Listen to what the man said", "cantor": "Wings", "aula": "9", "ano": "1975"}, {"folha": "170", "musica": "Lucy in the sky with diamonds", "cantor": "Elton John", "aula": "17", "ano": "1967"}, {"folha": "171", "musica": "Laughter in the rain", "cantor": "Neil Sedaka", "aula": "23", "ano": "1974"}, {"folha": "172", "musica": "Love will keep us together", "cantor": "Captain and Tennille", "aula": "32", "ano": "1975"}, {"folha": "173", "musica": "Like a locomotion", "cantor": "Sound Machine", "aula": "33", "ano": "1962"}, {"folha": "174", "musica": "Like roses", "cantor": "Jack Jones", "aula": "40", "ano": "1965"}, {"folha": "175", "musica": "Look at the mountains", "cantor": "Jimmy Cliff", "aula": "56", "ano": "1975"}, {"folha": "176", "musica": "Lost without your love", "cantor": "Bread", "aula": "68", "ano": "1976"}, {"folha": "177", "musica": "Love so right", "cantor": "Bee Gees", "aula": "160", "ano": "1976"}, {"folha": "178", "musica": "Let the day begin", "cantor": "Paradise", "aula": "171", "ano": "1978"}, {"folha": "179", "musica": "Lemon Tree", "cantor": "Peter Paul and Mary", "aula": "182", "ano": "1962"}, {"folha": "180", "musica": "Lady love", "cantor": "Lou Rawls", "aula": "217", "ano": "1977"}, {"folha": "181", "musica": "Love is in the air", "cantor": "John Paul Young", "aula": "262", "ano": "1977"}, {"folha": "182", "musica": "Love birds", "cantor": "Merrilee Rush", "aula": "274", "ano": "1968"}, {"folha": "183", "musica": "Lost in your love", "cantor": "John Paul Young", "aula": "301", "ano": "1978"}, {"folha": "184", "musica": "Love of my life", "cantor": "Queen", "aula": "305", "ano": "1975"}, {"folha": "185", "musica": "Let me try again", "cantor": "Frank Sinatra", "aula": "334", "ano": "1973"}, {"folha": "186", "musica": "Living together", "cantor": "Bee Gees", "aula": "349", "ano": "1979"}, {"folha": "187", "musica": "Last train to London", "cantor": "Electric Light Orchestra", "aula": "355", "ano": "1979"}, {"folha": "188", "musica": "My prayer", "cantor": "The Platters", "aula": "16", "ano": "1956"}, {"folha": "189", "musica": "My life", "cantor": "Michael Sullivan", "aula": "19", "ano": "1978"}, {"folha": "190", "musica": "Memories are made of this", "cantor": "Ray Conniff", "aula": "49", "ano": "1955"}, {"folha": "191", "musica": "Moon River", "cantor": "Andy Williams", "aula": "73", "ano": "1961"}, {"folha": "192", "musica": "Ma Baker", "cantor": "Boney M", "aula": "117", "ano": "1977"}, {"folha": "193", "musica": "My everything", "cantor": "Marmalade", "aula": "142", "ano": "1970"}, {"folha": "194", "musica": "Mornings", "cantor": "Morris Albert", "aula": "144", "ano": "1975"}, {"folha": "195", "musica": "Macho a real real one", "cantor": "Celi Bee", "aula": "223", "ano": "1978"}, {"folha": "196", "musica": "Moonlight Lady", "cantor": "John Travolta", "aula": "224", "ano": "1978"}, {"folha": "197", "musica": "Move on", "cantor": "ABBA", "aula": "250", "ano": "1977"}, {"folha": "198", "musica": "My life", "cantor": "Billy Joel", "aula": "258", "ano": "1978"}, {"folha": "199", "musica": "Mirrors", "cantor": "Sally Oldfield", "aula": "288", "ano": "1978"}, {"folha": "200", "musica": "Moving out", "cantor": "Billy Joel", "aula": "291", "ano": "1982"}, {"folha": "201", "musica": "My way", "cantor": "Frank Sinatra", "aula": "319", "ano": "1969"}, {"folha": "202", "musica": "Mamma can't buy you love", "cantor": "Elton John", "aula": "335", "ano": "1979"}, {"folha": "203", "musica": "Mary had a little lamb", "cantor": "Paul McCartney", "aula": "346", "ano": "1972"}, {"folha": "204", "musica": "Never let her go", "cantor": "David Gates", "aula": "34", "ano": "1975"}, {"folha": "205", "musica": "No honestly", "cantor": "Jeannie", "aula": "58", "ano": "1974"}, {"folha": "206", "musica": "New York you've got me dancing", "cantor": "Andrea True Connection", "aula": "83", "ano": "1976"}, {"folha": "207", "musica": "Nice and slow", "cantor": "Kew Gibson", "aula": "104", "ano": "1977"}, {"folha": "208", "musica": "Never get your love behind me", "cantor": "Faragher Bros", "aula": "134", "ano": "1978"}, {"folha": "209", "musica": "Never gonna fall in love again", "cantor": "Dana", "aula": "155", "ano": "1976"}, {"folha": "210", "musica": "Nobody does it better", "cantor": "Carly Simon", "aula": "169", "ano": "1977"}, {"folha": "211", "musica": "Night and day", "cantor": "Frank Sinatra", "aula": "229", "ano": "1942"}, {"folha": "212", "musica": "New kid in town", "cantor": "Eagles", "aula": "332", "ano": "1976"}, {"folha": "213", "musica": "One day in your life", "cantor": "Michael Jackson", "aula": "24", "ano": "1975"}, {"folha": "214", "musica": "Our love", "cantor": "Terry Winter", "aula": "39", "ano": "1978"}, {"folha": "215", "musica": "Our day will come", "cantor": "Ray Conniff", "aula": "67", "ano": "1963"}, {"folha": "216", "musica": "One more time", "cantor": "Peter Frampton", "aula": "72", "ano": "1976"}, {"folha": "217", "musica": "One more time", "cantor": "Lobo", "aula": "129", "ano": "1973"}, {"folha": "218", "musica": "Old schoolyard", "cantor": "Cat Stevens", "aula": "133", "ano": "1977"}, {"folha": "219", "musica": "On and on", "cantor": "Stephen Bishop", "aula": "204", "ano": "1977"}, {"folha": "220", "musica": "Old time reloving", "cantor": "Ringo Starr", "aula": "215", "ano": "1976"}, {"folha": "221", "musica": "Outside help", "cantor": "Johnny Rivers", "aula": "251", "ano": "1977"}, {"folha": "222", "musica": "Our love don't throw it all away", "cantor": "Andy Gibb", "aula": "293", "ano": "1978"}, {"folha": "223", "musica": "One fine day", "cantor": "Rita Coolidge", "aula": "300", "ano": "1979"}, {"folha": "224", "musica": "Oh Susie", "cantor": "Secret Service", "aula": "330", "ano": "1979"}, {"folha": "225", "musica": "Only you", "cantor": "Maggie Macneal", "aula": "338", "ano": "1974"}, {"folha": "226", "musica": "Puppy love", "cantor": "Paul Anka", "aula": "61", "ano": "1960"}, {"folha": "227", "musica": "Pillow talk", "cantor": "Doris Day", "aula": "111", "ano": "1959"}, {"folha": "228", "musica": "Promised land", "cantor": "Elvis Presley", "aula": "113", "ano": "1974"}, {"folha": "229", "musica": "Poor side of town", "cantor": "Johnny Rivers", "aula": "145", "ano": "1966"}, {"folha": "230", "musica": "Play me", "cantor": "Neil Diamond", "aula": "181", "ano": "1972"}, {"folha": "231", "musica": "Part-time love", "cantor": "Elton John", "aula": "260", "ano": "1978"}, {"folha": "232", "musica": "Rock on baby rock on", "cantor": "Betty Wright", "aula": "77", "ano": "1975"}, {"folha": "233", "musica": "Rock and roll lullaby", "cantor": "B.J. Thomas", "aula": "101", "ano": "1972"}, {"folha": "234", "musica": "Return to sender", "cantor": "Elvis Presley", "aula": "125", "ano": "1962"}, {"folha": "235", "musica": "Razzle dazzle", "cantor": "Bing Crosby", "aula": "154", "ano": "1975"}, {"folha": "236", "musica": "Rendezvous", "cantor": "Tina Charles", "aula": "158", "ano": "1976"}, {"folha": "237", "musica": "Rose garden", "cantor": "Lynn Anderson", "aula": "170", "ano": "1970"}, {"folha": "238", "musica": "River road", "cantor": "Crystal Gayle", "aula": "175", "ano": "1977"}, {"folha": "239", "musica": "Rock and roll is here to stay", "cantor": "Sha-na-na", "aula": "265", "ano": "1958"}, {"folha": "240", "musica": "Reunion", "cantor": "Bobby Goldsboro", "aula": "275", "ano": "1977"}, {"folha": "241", "musica": "Ready to take a chance", "cantor": "Barry Manilow", "aula": "287", "ano": "1978"}, {"folha": "242", "musica": "San Francisco", "cantor": "Scott McKenzie", "aula": "3", "ano": "1967"}, {"folha": "243", "musica": "Smile", "cantor": "Eric Clapton", "aula": "6", "ano": "1975"}, {"folha": "244", "musica": "Stand by me", "cantor": "John Lennon", "aula": "8", "ano": "1975"}, {"folha": "245", "musica": "Since I loved you last", "cantor": "Tom Jones", "aula": "12", "ano": "1967"}, {"folha": "246", "musica": "Stop to start", "cantor": "Blue Magic", "aula": "22", "ano": "1974"}, {"folha": "247", "musica": "Show and tell", "cantor": "Engelbert Humperdinck", "aula": "30", "ano": "1973"}, {"folha": "248", "musica": "Safari", "cantor": "Peter Cowap", "aula": "35", "ano": "1975"}, {"folha": "249", "musica": "Sailing", "cantor": "Rod Stewart", "aula": "43", "ano": "1975"}, {"folha": "250", "musica": "Save your kisses for me", "cantor": "Brotherhood of Man", "aula": "44", "ano": "1976"}, {"folha": "251", "musica": "Smoke gets in your eyes", "cantor": "The Platters", "aula": "45", "ano": "1933"}, {"folha": "252", "musica": "Summer Sand", "cantor": "Tony Orlando", "aula": "53", "ano": "1973"}, {"folha": "253", "musica": "Something stupid", "cantor": "Frank Sinatra", "aula": "60", "ano": "1967"}, {"folha": "254", "musica": "Send in the clowns", "cantor": "Ray Conniff", "aula": "78", "ano": "1973"}, {"folha": "255", "musica": "Something strange", "cantor": "Dave Maclean", "aula": "95", "ano": "1975"}, {"folha": "256", "musica": "Stoney", "cantor": "Lobo", "aula": "97", "ano": "1971"}, {"folha": "257", "musica": "Standing at the end of the line", "cantor": "Lobo", "aula": "110", "ano": "1972"}, {"folha": "258", "musica": "Swearing to God", "cantor": "Frankie Valli", "aula": "118", "ano": "1975"}, {"folha": "259", "musica": "Sweet sweet smile", "cantor": "Carpenters", "aula": "127", "ano": "1977"}, {"folha": "260", "musica": "See you when I get there", "cantor": "Lou Rawls", "aula": "140", "ano": "1976"}, {"folha": "261", "musica": "Shame and scandal in the family", "cantor": "The Stylistics", "aula": "143", "ano": "1975"}, {"folha": "262", "musica": "Summer rain", "cantor": "Johnny Rivers", "aula": "153", "ano": "1968"}, {"folha": "263", "musica": "Song sung blue", "cantor": "Neil Diamond", "aula": "165", "ano": "1972"}, {"folha": "264", "musica": "Slip slidin away", "cantor": "Simon and Garfunkel", "aula": "178", "ano": "1977"}, {"folha": "265", "musica": "Sweet caroline", "cantor": "Neil Diamond", "aula": "186", "ano": "1969"}, {"folha": "266", "musica": "Swaying to the music", "cantor": "Johnny Rivers", "aula": "196", "ano": "1977"}, {"folha": "267", "musica": "Stayin alive", "cantor": "Bee Gees", "aula": "203", "ano": "1977"}, {"folha": "268", "musica": "Self pity", "cantor": "Lucifer", "aula": "210", "ano": "1978"}, {"folha": "269", "musica": "Shadow dancing", "cantor": "Andy Gibb", "aula": "218", "ano": "1978"}, {"folha": "270", "musica": "Stargazer", "cantor": "Frank Sinatra", "aula": "225", "ano": "1976"}, {"folha": "271", "musica": "San Francisco Nights", "cantor": "Harpo", "aula": "227", "ano": "1967"}, {"folha": "272", "musica": "San Francisco Bay Blues", "cantor": "The Brothers Four", "aula": "236", "ano": "1961"}, {"folha": "273", "musica": "Summer nights", "cantor": "John Travolta", "aula": "241", "ano": "1978"}, {"folha": "274", "musica": "Sandy", "cantor": "John Travolta", "aula": "245", "ano": "1978"}, {"folha": "275", "musica": "She's always a woman", "cantor": "Billy Joel", "aula": "255", "ano": "1977"}, {"folha": "276", "musica": "Stumblin in", "cantor": "Suzy Quatro", "aula": "279", "ano": "1978"}, {"folha": "277", "musica": "Songbird", "cantor": "Barbra Streisand", "aula": "298", "ano": "1978"}, {"folha": "278", "musica": "Still", "cantor": "Commodores", "aula": "310", "ano": "1979"}, {"folha": "279", "musica": "Shadows in the moonlight", "cantor": "Anne Murray", "aula": "318", "ano": "1979"}, {"folha": "280", "musica": "Sun is here", "cantor": "Sun", "aula": "320", "ano": "1978"}, {"folha": "281", "musica": "September morn", "cantor": "Neil Diamond", "aula": "325", "ano": "1979"}, {"folha": "282", "musica": "Scotch and Soda", "cantor": "Manhattan Transfer", "aula": "331", "ano": "1975"}, {"folha": "283", "musica": "Stagger Lee", "cantor": "Neil Diamond", "aula": "336", "ano": "1973"}, {"folha": "284", "musica": "Sneaking out the back door", "cantor": "Crystal Gayle", "aula": "343", "ano": "1978"}, {"folha": "285", "musica": "She's like the wind", "cantor": "Patrick Swayze", "aula": "360", "ano": "1987"}, {"folha": "286", "musica": "Tears", "cantor": "Robin McNay", "aula": "7", "ano": "1975"}, {"folha": "287", "musica": "This masquerade", "cantor": "Carpenters", "aula": "10", "ano": "1976"}, {"folha": "288", "musica": "The end of the world", "cantor": "Geno Washington", "aula": "26", "ano": "1963"}, {"folha": "289", "musica": "Thankful for you", "cantor": "Engelbert Humperdinck", "aula": "29", "ano": "1976"}, {"folha": "290", "musica": "Treat her gently", "cantor": "Harry Nilsson", "aula": "36", "ano": "1975"}, {"folha": "291", "musica": "This is it", "cantor": "Melba Moore", "aula": "47", "ano": "1976"}, {"folha": "292", "musica": "Today's the day", "cantor": "America", "aula": "51", "ano": "1976"}, {"folha": "293", "musica": "True love", "cantor": "George Harrison", "aula": "70", "ano": "1976"}, {"folha": "294", "musica": "The most beautiful girl", "cantor": "Ray Conniff", "aula": "84", "ano": "1973"}, {"folha": "295", "musica": "Torn between two lovers", "cantor": "Mary MacGregor", "aula": "94", "ano": "1976"}, {"folha": "296", "musica": "Theme from a Summer place", "cantor": "Percy Faith", "aula": "99", "ano": "1960"}, {"folha": "297", "musica": "There's a honky tonk angel", "cantor": "Elvis Presley", "aula": "115", "ano": "1974"}, {"folha": "298", "musica": "The shadow of your smile", "cantor": "Tony Bennett", "aula": "115", "ano": "1965"}, {"folha": "299", "musica": "The air that I breathe", "cantor": "The Hollies", "aula": "179", "ano": "1974"}, {"folha": "300", "musica": "The name of the game", "cantor": "ABBA", "aula": "199", "ano": "1977"}, {"folha": "301", "musica": "Three times a lady", "cantor": "Commodores", "aula": "206", "ano": "1978"}, {"folha": "302", "musica": "The closer I get to you", "cantor": "Roberta Flack", "aula": "208", "ano": "1978"}, {"folha": "303", "musica": "Thank you for being a friend", "cantor": "Andrew Gold", "aula": "221", "ano": "1978"}, {"folha": "304", "musica": "The one and only", "cantor": "Gladys Knight", "aula": "240", "ano": "1973"}, {"folha": "305", "musica": "Those magic changes", "cantor": "Sha-na-na", "aula": "253", "ano": "1978"}, {"folha": "306", "musica": "Too much heaven", "cantor": "Bee Gees", "aula": "264", "ano": "1978"}, {"folha": "307", "musica": "Too much too little too late", "cantor": "Johnny Mathis", "aula": "268", "ano": "1978"}, {"folha": "308", "musica": "The first time ever I saw your face", "cantor": "Roberta Flack", "aula": "268", "ano": "1972"}, {"folha": "309", "musica": "There's always a goodbye", "cantor": "Randy Richards", "aula": "273", "ano": "1978"}, {"folha": "310", "musica": "That's what I want", "cantor": "Square", "aula": "278", "ano": "1978"}, {"folha": "311", "musica": "Tragedy", "cantor": "Bee Gees", "aula": "290", "ano": "1979"}, {"folha": "312", "musica": "Time passages", "cantor": "Al Stewart", "aula": "297", "ano": "1978"}, {"folha": "313", "musica": "The gambler", "cantor": "Kenny Rogers", "aula": "314", "ano": "1978"}, {"folha": "314", "musica": "The best days of my life", "cantor": "Rod Stewart", "aula": "345", "ano": "1988"}, {"folha": "315", "musica": "Venus", "cantor": "Lipstique", "aula": "270", "ano": "1969"}, {"folha": "316", "musica": "Stupid cupid", "cantor": "Neil Sedaka", "aula": "63", "ano": "1958"}, {"folha": "317", "musica": "Your love broke through", "cantor": "Debby Boone", "aula": "333", "ano": "1979"}, {"folha": "318", "musica": "Yes I'm ready", "cantor": "Teri DeSario", "aula": "354", "ano": "1979"}, {"folha": "319", "musica": "Zodiac", "cantor": "Roberta Flack", "aula": "148", "ano": "1973"}, {"folha": "320", "musica": "What's happenin baby", "cantor": "Stylistics", "aula": "2", "ano": "1974"}, {"folha": "321", "musica": "Writing", "cantor": "Elton John", "aula": "25", "ano": "1973"}, {"folha": "322", "musica": "Who loves you", "cantor": "Four Seasons", "aula": "57", "ano": "1975"}, {"folha": "323", "musica": "Where do I go", "cantor": "Julius La Rosa", "aula": "87", "ano": "1968"}, {"folha": "324", "musica": "Wooly bully boogie", "cantor": "Oscar Benton", "aula": "139", "ano": "1965"}, {"folha": "325", "musica": "Which way you going Billy", "cantor": "Donny and Marie Osmond", "aula": "152", "ano": "1973"}, {"folha": "326", "musica": "We can make it", "cantor": "Lobo", "aula": "166", "ano": "1973"}, {"folha": "327", "musica": "We got love", "cantor": "Donnie and Marie Osmond", "aula": "177", "ano": "1975"}, {"folha": "328", "musica": "We're all alone", "cantor": "Rita Coolidge", "aula": "190", "ano": "1976"}, {"folha": "329", "musica": "When I wanted you", "cantor": "Addrisi Brothers", "aula": "193", "ano": "1977"}, {"folha": "330", "musica": "We'll never have to say goodbye again", "cantor": "England Dan and John Ford Coley", "aula": "212", "ano": "1978"}, {"folha": "331", "musica": "Watching over you", "cantor": "Emerson Lake and Palmer", "aula": "219", "ano": "1977"}, {"folha": "332", "musica": "Wichita lineman", "cantor": "The Brothers Four", "aula": "226", "ano": "1968"}, {"folha": "333", "musica": "Whenever I'm away from you", "cantor": "John Travolta", "aula": "235", "ano": "1976"}, {"folha": "334", "musica": "Where have you been all of my life", "cantor": "Rick Clark", "aula": "261", "ano": "1960"}, {"folha": "335", "musica": "What a wonderful world", "cantor": "Art Garfunkel", "aula": "266", "ano": "1978"}, {"folha": "336", "musica": "Where did our love go", "cantor": "Ringo Starr", "aula": "276", "ano": "1977"}, {"folha": "337", "musica": "Who's loving you", "cantor": "Dobie Gray", "aula": "307", "ano": "1970"}, {"folha": "338", "musica": "Why don't we try a slow dance", "cantor": "Barry Manilow", "aula": "312", "ano": "1979"}, {"folha": "339", "musica": "Where were you when I was falling in love", "cantor": "Lobo", "aula": "328", "ano": "1976"}, {"folha": "340", "musica": "Warm ride", "cantor": "Andy Gibb", "aula": "340", "ano": "1979"}, {"folha": "341", "musica": "We don't talk anymore", "cantor": "Cliff Richard", "aula": "353", "ano": "1979"}, {"folha": "342", "musica": "You're the first the last my everything", "cantor": "Barry White", "aula": "19", "ano": "1974"}, {"folha": "343", "musica": "You're sixteen", "cantor": "Ringo Starr", "aula": "48", "ano": "1973"}, {"folha": "344", "musica": "You can get it if you really want", "cantor": "Johnny Rivers", "aula": "75", "ano": "1970"}, {"folha": "345", "musica": "Young hearts run free", "cantor": "Candi Staton", "aula": "85", "ano": "1976"}, {"folha": "346", "musica": "You and me", "cantor": "Alice Cooper", "aula": "102", "ano": "1977"}, {"folha": "347", "musica": "You are my love", "cantor": "Liverpool Express", "aula": "108", "ano": "1976"}, {"folha": "348", "musica": "You make me feel like dancing", "cantor": "Leo Sayer", "aula": "119", "ano": "1976"}, {"folha": "349", "musica": "Yes sir I can boogie", "cantor": "Baccara", "aula": "123", "ano": "1977"}, {"folha": "350", "musica": "Your fairytale", "cantor": "Donna Summer", "aula": "150", "ano": "1976"}, {"folha": "351", "musica": "Year of the cat", "cantor": "Al Stewart", "aula": "185", "ano": "1976"}, {"folha": "352", "musica": "You're in my heart", "cantor": "Rod Stewart", "aula": "189", "ano": "1977"}, {"folha": "353", "musica": "You light up my life", "cantor": "Debby Boone", "aula": "198", "ano": "1977"}, {"folha": "354", "musica": "Your smiling face", "cantor": "James Taylor", "aula": "220", "ano": "1977"}, {"folha": "355", "musica": "You're the one that I want", "cantor": "John Travolta and Olivia Newton-John", "aula": "239", "ano": "1978"}, {"folha": "356", "musica": "YMCA", "cantor": "Village People", "aula": "248", "ano": "1978"}, {"folha": "357", "musica": "You don't bring me flowers", "cantor": "Barbra Streisand", "aula": "259", "ano": "1978"}, {"folha": "358", "musica": "You're too far away", "cantor": "David Castle", "aula": "289", "ano": "1977"}, {"folha": "359", "musica": "You're a very special part of me", "cantor": "Johnny Mathis", "aula": "299", "ano": "1978"}, {"folha": "360", "musica": "You decorated my life", "cantor": "Kenny Rogers", "aula": "322", "ano": "1978"}];
 
-  var accessToken      = null;
-  var todasMusicas     = [];
-  var musicasFiltradas = [];
-  var filtroAtivo      = 'todos';
-  var terminoBusca     = '';
-  var tocandoUrl       = null;
+var todasMusicas     = MUSICAS;
+var musicasFiltradas = MUSICAS.slice();
+var filtroAtivo      = 'todos';
+var terminoBusca     = '';
 
-  // ── Init ──────────────────────────────────────────────
-  window.onload = function() {
-    // Monta link de login direto
-    var authUrl = 'https://accounts.spotify.com/authorize'
-      + '?client_id='    + CLIENT_ID
-      + '&response_type=code'
-      + '&redirect_uri=' + encodeURIComponent(CALLBACK_URL)
-      + '&scope='        + encodeURIComponent(SCOPES)
-      + '&show_dialog=true';
-    document.getElementById('btnLogin').href = authUrl;
+window.onload = function() {
+  renderLista(todasMusicas);
+  var t;
+  document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(t);
+    t = setTimeout(executarBusca, 150);
+    document.getElementById('clearBtn').style.display = this.value ? 'block' : 'none';
+  });
+};
 
-    // Verifica se voltou do callback com o code
-    var params = {};
-    window.location.search.substring(1).split('&').forEach(function(p) {
-      var kv = p.split('=');
-      if (kv[0]) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
-    });
+function setFiltro(campo, el) {
+  filtroAtivo = campo;
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active');});
+  el.classList.add('active');
+  executarBusca();
+}
 
-    if (params.code) {
-      // Troca o code pelo token diretamente no browser
-      document.getElementById('loginScreen').innerHTML =
-        '<h1>🎵 My English Songs</h1><p style="color:#aaa;font-size:17px;margin-top:12px">Conectando ao Spotify...</p>'
-        + '<div style="width:40px;height:40px;border:4px solid #333;border-top-color:#1DB954;border-radius:50%;animation:spin 0.7s linear infinite;margin:30px auto"></div>';
-      trocarCodePorToken(params.code);
-      return;
-    }
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('clearBtn').style.display = 'none';
+  terminoBusca = '';
+  executarBusca();
+}
 
-    // Verifica token salvo
-    var token   = localStorage.getItem('sp_token');
-    var expires = parseInt(localStorage.getItem('sp_expires') || '0');
-    if (token && Date.now() < expires) {
-      accessToken = token;
-      mostrarApp();
-    }
-    // senão fica na tela de login
-  };
+function executarBusca() {
+  terminoBusca = document.getElementById('searchInput').value.toLowerCase().trim();
+  musicasFiltradas = !terminoBusca ? todasMusicas.slice() : todasMusicas.filter(function(m) {
+    if (filtroAtivo === 'musica') return m.musica.toLowerCase().includes(terminoBusca);
+    if (filtroAtivo === 'cantor') return m.cantor.toLowerCase().includes(terminoBusca);
+    if (filtroAtivo === 'ano')    return m.ano.includes(terminoBusca);
+    return m.musica.toLowerCase().includes(terminoBusca) || m.cantor.toLowerCase().includes(terminoBusca) || m.ano.includes(terminoBusca);
+  });
+  renderLista(musicasFiltradas);
+}
 
-  // ── Troca code por token (direto no browser via fetch) ─
-  function trocarCodePorToken(code) {
-    var body = 'grant_type=authorization_code'
-      + '&code='         + encodeURIComponent(code)
-      + '&redirect_uri=' + encodeURIComponent(CALLBACK_URL);
+function hl(t) {
+  if (!terminoBusca || !t) return t;
+  return t.replace(new RegExp('('+terminoBusca.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');
+}
 
-    fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type'  : 'application/x-www-form-urlencoded',
-        'Authorization' : 'Basic ' + btoa(CLIENT_ID + ':' + CLIENT_SECRET)
-      },
-      body: body
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.access_token) {
-        accessToken = data.access_token;
-        localStorage.setItem('sp_token',   data.access_token);
-        localStorage.setItem('sp_refresh', data.refresh_token || '');
-        localStorage.setItem('sp_expires', String(Date.now() + (data.expires_in - 60) * 1000));
-        // Limpa a URL
-        history.replaceState(null, null, window.location.pathname);
-        mostrarApp();
-      } else {
-        document.getElementById('loginScreen').innerHTML =
-          '<h1 style="color:#fff">❌ Erro ao conectar</h1>'
-          + '<p style="color:#aaa;margin:16px 0">' + JSON.stringify(data) + '</p>'
-          + '<a href="' + window.location.pathname + '" style="color:#1DB954;font-size:17px">Tentar novamente</a>';
-      }
-    })
-    .catch(function(err) {
-      document.getElementById('loginScreen').innerHTML =
-        '<h1 style="color:#fff">❌ Erro</h1>'
-        + '<p style="color:#aaa;margin:16px 0">' + err.message + '</p>'
-        + '<a href="' + window.location.pathname + '" style="color:#1DB954;font-size:17px">Tentar novamente</a>';
-    });
+function renderLista(lista) {
+  var bar = document.getElementById('countBar');
+  var el  = document.getElementById('songList');
+  if (!lista.length) {
+    bar.textContent = 'Nenhum resultado';
+    el.innerHTML = '<div class="state-msg">🔍<br>Nada encontrado para "'+terminoBusca+'"</div>';
+    return;
   }
+  bar.textContent = lista.length === todasMusicas.length ? lista.length+' músicas no total' : lista.length+' resultado'+(lista.length>1?'s':'');
+  var html = '';
+  lista.forEach(function(m, i) {
+    var texto = m.musica+' - '+m.cantor;
+    var textoEsc = texto.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html += '<div class="song-item">'
+      +'<div class="folha-badge">'+m.folha+'</div>'
+      +'<div class="song-body">'
+      +'<div class="song-title">'+hl(m.musica)+'</div>'
+      +'<div class="song-artist">'+hl(m.cantor)+'</div>'
+      +'<div class="song-tags"><span class="tag">Aula '+m.aula+'</span>'+(m.ano?'<span class="tag">'+m.ano+'</span>':'')+'</div>'
+      +'</div>'
+      +'<button class="btn-copiar" id="cbtn-'+i+'" onclick="copiarMusica('+i+',\''+textoEsc+'\',this)" title="Copiar para Spotify">📋</button>'
+      +'</div>';
+  });
+  el.innerHTML = html;
+}
 
-  function fazerLogout() {
-    localStorage.clear();
-    accessToken = null;
-    location.reload();
-  }
+function copiarMusica(idx, texto, btn) {
+  navigator.clipboard.writeText(texto).then(function() {
+    btn.textContent = '✅';
+    btn.classList.add('copiado');
+    setTimeout(function(){ btn.textContent='📋'; btn.classList.remove('copiado'); }, 2000);
+    showToast('Copiado: '+texto);
+  }).catch(function() {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✅';
+    setTimeout(function(){ btn.textContent='📋'; }, 2000);
+    showToast('Copiado: '+texto);
+  });
+}
 
-  function mostrarApp() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').classList.add('visible');
-    carregarMusicas();
-  }
+function copiarTodos() {
+  var lista = musicasFiltradas.length ? musicasFiltradas : todasMusicas;
+  var texto = lista.map(function(m){ return m.musica+' - '+m.cantor; }).join('\n');
+  navigator.clipboard.writeText(texto).then(function() {
+    showToast('✅ '+lista.length+' músicas copiadas!');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ '+lista.length+' músicas copiadas!');
+  });
+}
 
-  // ── Músicas embutidas diretamente ────────────────────
-  var MUSICAS_DATA = [{"folha": "35", "musica": "Canada", "cantor": "Pilot", "aula": "62", "ano": "1974"}, {"folha": "36", "musica": "Conversation", "cantor": "Morris Albert", "aula": "79", "ano": "1975"}, {"folha": "37", "musica": "C'est la vie", "cantor": "Emerson, Lake & Palmer", "aula": "124", "ano": "1977"}, {"folha": "38", "musica": "Cast your fate to the wind", "cantor": "Johnny Rivers", "aula": "163", "ano": "1965"}, {"folha": "39", "musica": "Come home for the winter", "cantor": "Andy Gibb", "aula": "187", "ano": "1978"}, {"folha": "40", "musica": "Close to you", "cantor": "Carpenters", "aula": "201", "ano": "1970"}, {"folha": "41", "musica": "Copacabana", "cantor": "Barry Manilow", "aula": "205", "ano": "1978"}, {"folha": "42", "musica": "Count on me", "cantor": "Jefferson Starship", "aula": "211", "ano": "1978"}, {"folha": "43", "musica": "Can't take my eyes off of you", "cantor": "Engelbert Humperdinck", "aula": "231", "ano": "1967"}, {"folha": "44", "musica": "Camelita", "cantor": "Linda Ronstadt", "aula": "271", "ano": "1976"}, {"folha": "45", "musica": "Crazy little thing called love", "cantor": "Queen", "aula": "323", "ano": "1979"}, {"folha": "46", "musica": "Dance (While the music still goes on)", "cantor": "ABBA", "aula": "20", "ano": "1974"}, {"folha": "47", "musica": "Don't let me cry", "cantor": "Bobby Crimson", "aula": "21", "ano": "1977"}, {"folha": "48", "musica": "Don't wanna say goodbye", "cantor": "Eric Clapton", "aula": "54", "ano": "1977"}, {"folha": "49", "musica": "Dancing queen", "cantor": "Jenny Robinson", "aula": "66", "ano": "1976"}, {"folha": "50", "musica": "Dance little lady dance", "cantor": "Brenda Taylor", "aula": "74", "ano": "1976"}, {"folha": "51", "musica": "Don't expect me to be your friend", "cantor": "Lobo", "aula": "103", "ano": "1972"}, {"folha": "52", "musica": "Dock of the Bay", "cantor": "Otis Redding", "aula": "105", "ano": "1968"}, {"folha": "53", "musica": "Don't leave me this way", "cantor": "Thelma Houston", "aula": "131", "ano": "1976"}, {"folha": "54", "musica": "Don't tell me goodnight", "cantor": "Lobo", "aula": "147", "ano": "1973"}, {"folha": "55", "musica": "Don't it make my brown eyes blue", "cantor": "Crystal Gayle", "aula": "164", "ano": "1977"}, {"folha": "56", "musica": "Don't fence me in", "cantor": "Bing Crosby", "aula": "188", "ano": "1944"}, {"folha": "57", "musica": "Dance a little bit closer", "cantor": "Charo", "aula": "192", "ano": "1977"}, {"folha": "58", "musica": "Don't stop", "cantor": "Fleetwood Mac", "aula": "195", "ano": "1977"}, {"folha": "59", "musica": "Dust in the wind", "cantor": "Kansas", "aula": "213", "ano": "1977"}, {"folha": "60", "musica": "Dancing the night away", "cantor": "Leo Sayer", "aula": "228", "ano": "1977"}, {"folha": "61", "musica": "Don't think twice it's all right", "cantor": "Peter Paul and Mary", "aula": "247", "ano": "1963"}, {"folha": "62", "musica": "Dreaming", "cantor": "Liverpool Express", "aula": "267", "ano": "1976"}, {"folha": "63", "musica": "Deeper than the night", "cantor": "Olivia Newton-John", "aula": "311", "ano": "1979"}, {"folha": "64", "musica": "Do that to me one more time", "cantor": "Captain and Tennille", "aula": "329", "ano": "1979"}, {"folha": "65", "musica": "Don't ask me why", "cantor": "Billy Joel", "aula": "347", "ano": "1980"}, {"folha": "66", "musica": "Do you miss me", "cantor": "Morris Albert", "aula": "358", "ano": "1975"}, {"folha": "67", "musica": "Everybody loves somebody", "cantor": "Morris Albert", "aula": "46", "ano": "1964"}, {"folha": "68", "musica": "Everybody's talking", "cantor": "Ray Conniff", "aula": "89", "ano": "1969"}, {"folha": "69", "musica": "Every man must have a dream", "cantor": "Liverpool Express", "aula": "100", "ano": "1976"}, {"folha": "70", "musica": "El condor pasa", "cantor": "Simon and Garfunkel", "aula": "151", "ano": "1970"}, {"folha": "71", "musica": "Emotion", "cantor": "Samantha Sang", "aula": "151", "ano": "1977"}, {"folha": "72", "musica": "Easy to love", "cantor": "Leo Sayer", "aula": "184", "ano": "1976"}, {"folha": "73", "musica": "Everybody ought to be in love", "cantor": "Frank Sinatra", "aula": "191", "ano": "1955"}, {"folha": "74", "musica": "El Lute", "cantor": "Boney M", "aula": "237", "ano": "1979"}, {"folha": "75", "musica": "Find yourself a rainbow", "cantor": "Slade", "aula": "14", "ano": "1974"}, {"folha": "76", "musica": "From me to you", "cantor": "Beatles", "aula": "69", "ano": "1963"}, {"folha": "77", "musica": "Fever", "cantor": "Elvis Presley", "aula": "128", "ano": "1960"}, {"folha": "78", "musica": "From me to you", "cantor": "The Boones", "aula": "216", "ano": "1963"}, {"folha": "79", "musica": "Fantasy", "cantor": "Earth Wind and Fire", "aula": "296", "ano": "1977"}, {"folha": "80", "musica": "Forever young", "cantor": "Alphaville", "aula": "357", "ano": "1984"}, {"folha": "81", "musica": "Girl you'll be my woman soon", "cantor": "Biddu Orchestra", "aula": "183", "ano": "1967"}, {"folha": "82", "musica": "Green door", "cantor": "Crystal Gayle", "aula": "238", "ano": "1977"}, {"folha": "83", "musica": "Grease", "cantor": "Frankie Valli", "aula": "244", "ano": "1978"}, {"folha": "84", "musica": "Gone long gone", "cantor": "Chicago", "aula": "282", "ano": "1979"}, {"folha": "85", "musica": "Goodnight tonight", "cantor": "Wings", "aula": "284", "ano": "1979"}, {"folha": "86", "musica": "Got a feeling", "cantor": "Patrick Junet", "aula": "294", "ano": "1978"}, {"folha": "87", "musica": "Gonna get along without you now", "cantor": "Viola Wills", "aula": "326", "ano": "1979"}, {"folha": "88", "musica": "Hey won't you play somebody done somebody wrong song", "cantor": "B.J. Thomas", "aula": "1", "ano": "1975"}, {"folha": "89", "musica": "Hitching a ride in the moonlight", "cantor": "Middle of the road", "aula": "13", "ano": "1973"}, {"folha": "90", "musica": "Happy", "cantor": "Michael Jackson", "aula": "13", "ano": "1972"}, {"folha": "91", "musica": "Hey boy", "cantor": "Tina Charles", "aula": "41", "ano": "1976"}, {"folha": "92", "musica": "Hands of time", "cantor": "Perry Como", "aula": "59", "ano": "1971"}, {"folha": "93", "musica": "Hold back the water", "cantor": "Bachman Turner Overdrive", "aula": "76", "ano": "1975"}, {"folha": "94", "musica": "Hello Nadine", "cantor": "Mungo Jerry", "aula": "88", "ano": "1973"}, {"folha": "95", "musica": "Hello Mary Lou", "cantor": "Loggins and Messina", "aula": "93", "ano": "1961"}, {"folha": "96", "musica": "How wonderful to know", "cantor": "B and C", "aula": "116", "ano": "1974"}, {"folha": "97", "musica": "Hey baby", "cantor": "Ringo Starr", "aula": "130", "ano": "1976"}, {"folha": "98", "musica": "Hasta Manana", "cantor": "ABBA", "aula": "137", "ano": "1974"}, {"folha": "99", "musica": "How deep is your love", "cantor": "Bee Gees", "aula": "138", "ano": "1977"}, {"folha": "100", "musica": "He ain't heavy he's my brother", "cantor": "Hollies", "aula": "141", "ano": "1969"}, {"folha": "101", "musica": "Help me", "cantor": "Elvis Presley", "aula": "149", "ano": "1974"}, {"folha": "102", "musica": "Hotel California", "cantor": "Eagles", "aula": "192", "ano": "1976"}, {"folha": "103", "musica": "Hopelessly devoted to you", "cantor": "Olivia Newton-John", "aula": "202", "ano": "1978"}, {"folha": "104", "musica": "Hole in your soul", "cantor": "ABBA", "aula": "210", "ano": "1977"}, {"folha": "105", "musica": "Happy day", "cantor": "Roberta Flack", "aula": "248", "ano": "1969"}, {"folha": "106", "musica": "Honesty", "cantor": "Billy Joel", "aula": "250", "ano": "1978"}, {"folha": "107", "musica": "How you gonna see me now", "cantor": "Alice Cooper", "aula": "254", "ano": "1978"}, {"folha": "108", "musica": "Heaven knows", "cantor": "Donna Summer", "aula": "302", "ano": "1978"}, {"folha": "109", "musica": "Hold the line", "cantor": "Toto", "aula": "304", "ano": "1978"}, {"folha": "110", "musica": "Help", "cantor": "Dolly Parton", "aula": "306", "ano": "1979"}, {"folha": "111", "musica": "Heart of glass", "cantor": "Blondie", "aula": "308", "ano": "1978"}, {"folha": "112", "musica": "Hold me tight", "cantor": "Anne Murray", "aula": "310", "ano": "1978"}, {"folha": "113", "musica": "He can't help it if he's not you", "cantor": "Anne Murray", "aula": "341", "ano": "1979"}, {"folha": "114", "musica": "If", "cantor": "Frank Sinatra", "aula": "5", "ano": "1971"}, {"folha": "115", "musica": "It doesn't matter much to me", "cantor": "Bee Gees", "aula": "11", "ano": "1969"}, {"folha": "116", "musica": "I can dream can't I", "cantor": "Carpenters", "aula": "28", "ano": "1949"}, {"folha": "117", "musica": "I'm caught between goodbye and I love you", "cantor": "Carpenters", "aula": "31", "ano": "1973"}, {"folha": "118", "musica": "I write the songs", "cantor": "Barry White", "aula": "37", "ano": "1975"}, {"folha": "119", "musica": "It don't come easy", "cantor": "Ringo Starr", "aula": "38", "ano": "1971"}, {"folha": "120", "musica": "I'll go where your music takes me", "cantor": "Jimmy James", "aula": "50", "ano": "1976"}, {"folha": "121", "musica": "I do I do I do", "cantor": "ABBA", "aula": "52", "ano": "1975"}, {"folha": "122", "musica": "I go to Rio", "cantor": "P. Allen", "aula": "55", "ano": "1976"}, {"folha": "123", "musica": "I never cry", "cantor": "Alice Cooper", "aula": "64", "ano": "1976"}, {"folha": "124", "musica": "I don't want to lose you", "cantor": "Spinners", "aula": "65", "ano": "1974"}, {"folha": "125", "musica": "It's now or never", "cantor": "Elvis Presley", "aula": "86", "ano": "1960"}, {"folha": "126", "musica": "I'm coming home", "cantor": "The Stylistics", "aula": "91", "ano": "1974"}, {"folha": "127", "musica": "It's not for me to say", "cantor": "Johnny Mathis", "aula": "92", "ano": "1957"}, {"folha": "128", "musica": "I loved you more than ever", "cantor": "Blood Sweat and Tears", "aula": "107", "ano": "1973"}, {"folha": "129", "musica": "I left my heart in San Francisco", "cantor": "Tony Bennett", "aula": "109", "ano": "1962"}, {"folha": "130", "musica": "I don't want to go on without you", "cantor": "Nazareth", "aula": "114", "ano": "1975"}, {"folha": "131", "musica": "I can help", "cantor": "Billy Swan", "aula": "120", "ano": "1974"}, {"folha": "132", "musica": "I could dance all night", "cantor": "Archie Bell", "aula": "121", "ano": "1975"}, {"folha": "133", "musica": "In the Ghetto", "cantor": "Elvis Presley", "aula": "122", "ano": "1969"}, {"folha": "134", "musica": "I'm in you", "cantor": "Peter Frampton", "aula": "135", "ano": "1977"}, {"folha": "135", "musica": "I remember yesterday", "cantor": "Donna Summer", "aula": "136", "ano": "1977"}, {"folha": "136", "musica": "I'll never fall in love again", "cantor": "Bing Crosby", "aula": "162", "ano": "1969"}, {"folha": "137", "musica": "In my life", "cantor": "Beatles", "aula": "167", "ano": "1965"}, {"folha": "138", "musica": "I am I said", "cantor": "Neil Diamond", "aula": "174", "ano": "1971"}, {"folha": "139", "musica": "I just wanna be your everything", "cantor": "Andy Gibb", "aula": "176", "ano": "1977"}, {"folha": "140", "musica": "It's a heartache", "cantor": "Bonnie Tyler", "aula": "197", "ano": "1977"}, {"folha": "141", "musica": "I sing the songs", "cantor": "Frank Sinatra", "aula": "200", "ano": "1975"}, {"folha": "142", "musica": "It's so easy", "cantor": "Linda Ronstadt", "aula": "222", "ano": "1977"}, {"folha": "143", "musica": "I never will marry", "cantor": "Linda Ronstadt", "aula": "232", "ano": "1976"}, {"folha": "144", "musica": "I wanna come back", "cantor": "Crystal Gayle", "aula": "234", "ano": "1978"}, {"folha": "145", "musica": "I loved you", "cantor": "Freddy Cole", "aula": "242", "ano": "1977"}, {"folha": "146", "musica": "If you can't give me love", "cantor": "Suzy Quatro", "aula": "249", "ano": "1978"}, {"folha": "147", "musica": "I believe I'm gonna love you", "cantor": "Frank Sinatra", "aula": "252", "ano": "1978"}, {"folha": "148", "musica": "It's just a matter of time", "cantor": "Debby Boone", "aula": "277", "ano": "1978"}, {"folha": "149", "musica": "I will survive", "cantor": "Gloria Gaynor", "aula": "281", "ano": "1978"}, {"folha": "150", "musica": "In the navy", "cantor": "Village People", "aula": "286", "ano": "1979"}, {"folha": "151", "musica": "I believe you", "cantor": "Carpenters", "aula": "295", "ano": "1979"}, {"folha": "152", "musica": "I don't care", "cantor": "Elton John", "aula": "302", "ano": "1979"}, {"folha": "153", "musica": "I have a dream", "cantor": "ABBA", "aula": "309", "ano": "1979"}, {"folha": "154", "musica": "If not for you", "cantor": "Ray Conniff", "aula": "313", "ano": "1970"}, {"folha": "155", "musica": "I just fall in love", "cantor": "Anne Murray", "aula": "315", "ano": "1979"}, {"folha": "156", "musica": "I wish that I could hurt that way again", "cantor": "Kenny Rogers", "aula": "316", "ano": "1979"}, {"folha": "157", "musica": "I don't want to walk without you", "cantor": "Barry Manilow", "aula": "317", "ano": "1979"}, {"folha": "158", "musica": "I'd rather leave while I'm in love", "cantor": "Rita Coolidge", "aula": "327", "ano": "1979"}, {"folha": "159", "musica": "I don't wanna talk about it", "cantor": "Rod Stewart", "aula": "339", "ano": "1977"}, {"folha": "160", "musica": "I'm a believer", "cantor": "Neil Diamond", "aula": "342", "ano": "1966"}, {"folha": "161", "musica": "In no time at all", "cantor": "Ronnie Milsap", "aula": "344", "ano": "1979"}, {"folha": "162", "musica": "I can't help it", "cantor": "Andy Gibb", "aula": "352", "ano": "1979"}, {"folha": "163", "musica": "Just walking in the rain", "cantor": "Johnny Ray", "aula": "82", "ano": "1956"}, {"folha": "164", "musica": "Jailhouse rock", "cantor": "Elvis Presley", "aula": "98", "ano": "1957"}, {"folha": "165", "musica": "Just the way you are", "cantor": "Billy Joel", "aula": "194", "ano": "1977"}, {"folha": "166", "musica": "Just one look", "cantor": "Hollies", "aula": "256", "ano": "1964"}, {"folha": "167", "musica": "Just when I needed you most", "cantor": "Randy VanWarmer", "aula": "331", "ano": "1979"}, {"folha": "168", "musica": "Kung fu fighting", "cantor": "Carl Douglas", "aula": "27", "ano": "1974"}, {"folha": "169", "musica": "Listen to what the man said", "cantor": "Wings", "aula": "9", "ano": "1975"}, {"folha": "170", "musica": "Lucy in the sky with diamonds", "cantor": "Elton John", "aula": "17", "ano": "1967"}, {"folha": "171", "musica": "Laughter in the rain", "cantor": "Neil Sedaka", "aula": "23", "ano": "1974"}, {"folha": "172", "musica": "Love will keep us together", "cantor": "Captain and Tennille", "aula": "32", "ano": "1975"}, {"folha": "173", "musica": "Like a locomotion", "cantor": "Sound Machine", "aula": "33", "ano": "1962"}, {"folha": "174", "musica": "Like roses", "cantor": "Jack Jones", "aula": "40", "ano": "1965"}, {"folha": "175", "musica": "Look at the mountains", "cantor": "Jimmy Cliff", "aula": "56", "ano": "1975"}, {"folha": "176", "musica": "Lost without your love", "cantor": "Bread", "aula": "68", "ano": "1976"}, {"folha": "177", "musica": "Love so right", "cantor": "Bee Gees", "aula": "160", "ano": "1976"}, {"folha": "178", "musica": "Let the day begin", "cantor": "Paradise", "aula": "171", "ano": "1978"}, {"folha": "179", "musica": "Lemon Tree", "cantor": "Peter Paul and Mary", "aula": "182", "ano": "1962"}, {"folha": "180", "musica": "Lady love", "cantor": "Lou Rawls", "aula": "217", "ano": "1977"}, {"folha": "181", "musica": "Love is in the air", "cantor": "John Paul Young", "aula": "262", "ano": "1977"}, {"folha": "182", "musica": "Love birds", "cantor": "Merrilee Rush", "aula": "274", "ano": "1968"}, {"folha": "183", "musica": "Lost in your love", "cantor": "John Paul Young", "aula": "301", "ano": "1978"}, {"folha": "184", "musica": "Love of my life", "cantor": "Queen", "aula": "305", "ano": "1975"}, {"folha": "185", "musica": "Let me try again", "cantor": "Frank Sinatra", "aula": "334", "ano": "1973"}, {"folha": "186", "musica": "Living together", "cantor": "Bee Gees", "aula": "349", "ano": "1979"}, {"folha": "187", "musica": "Last train to London", "cantor": "Electric Light Orchestra", "aula": "355", "ano": "1979"}, {"folha": "188", "musica": "My prayer", "cantor": "The Platters", "aula": "16", "ano": "1956"}, {"folha": "189", "musica": "My life", "cantor": "Michael Sullivan", "aula": "19", "ano": "1978"}, {"folha": "190", "musica": "Memories are made of this", "cantor": "Ray Conniff", "aula": "49", "ano": "1955"}, {"folha": "191", "musica": "Moon River", "cantor": "Andy Williams", "aula": "73", "ano": "1961"}, {"folha": "192", "musica": "Ma Baker", "cantor": "Boney M", "aula": "117", "ano": "1977"}, {"folha": "193", "musica": "My everything", "cantor": "Marmalade", "aula": "142", "ano": "1970"}, {"folha": "194", "musica": "Mornings", "cantor": "Morris Albert", "aula": "144", "ano": "1975"}, {"folha": "195", "musica": "Macho a real real one", "cantor": "Celi Bee", "aula": "223", "ano": "1978"}, {"folha": "196", "musica": "Moonlight Lady", "cantor": "John Travolta", "aula": "224", "ano": "1978"}, {"folha": "197", "musica": "Move on", "cantor": "ABBA", "aula": "250", "ano": "1977"}, {"folha": "198", "musica": "My life", "cantor": "Billy Joel", "aula": "258", "ano": "1978"}, {"folha": "199", "musica": "Mirrors", "cantor": "Sally Oldfield", "aula": "288", "ano": "1978"}, {"folha": "200", "musica": "Moving out", "cantor": "Billy Joel", "aula": "291", "ano": "1982"}, {"folha": "201", "musica": "My way", "cantor": "Frank Sinatra", "aula": "319", "ano": "1969"}, {"folha": "202", "musica": "Mamma can't buy you love", "cantor": "Elton John", "aula": "335", "ano": "1979"}, {"folha": "203", "musica": "Mary had a little lamb", "cantor": "Paul McCartney", "aula": "346", "ano": "1972"}, {"folha": "204", "musica": "Never let her go", "cantor": "David Gates", "aula": "34", "ano": "1975"}, {"folha": "205", "musica": "No honestly", "cantor": "Jeannie", "aula": "58", "ano": "1974"}, {"folha": "206", "musica": "New York you've got me dancing", "cantor": "Andrea True Connection", "aula": "83", "ano": "1976"}, {"folha": "207", "musica": "Nice and slow", "cantor": "Kew Gibson", "aula": "104", "ano": "1977"}, {"folha": "208", "musica": "Never get your love behind me", "cantor": "Faragher Bros", "aula": "134", "ano": "1978"}, {"folha": "209", "musica": "Never gonna fall in love again", "cantor": "Dana", "aula": "155", "ano": "1976"}, {"folha": "210", "musica": "Nobody does it better", "cantor": "Carly Simon", "aula": "169", "ano": "1977"}, {"folha": "211", "musica": "Night and day", "cantor": "Frank Sinatra", "aula": "229", "ano": "1942"}, {"folha": "212", "musica": "New kid in town", "cantor": "Eagles", "aula": "332", "ano": "1976"}, {"folha": "213", "musica": "One day in your life", "cantor": "Michael Jackson", "aula": "24", "ano": "1975"}, {"folha": "214", "musica": "Our love", "cantor": "Terry Winter", "aula": "39", "ano": "1978"}, {"folha": "215", "musica": "Our day will come", "cantor": "Ray Conniff", "aula": "67", "ano": "1963"}, {"folha": "216", "musica": "One more time", "cantor": "Peter Frampton", "aula": "72", "ano": "1976"}, {"folha": "217", "musica": "One more time", "cantor": "Lobo", "aula": "129", "ano": "1973"}, {"folha": "218", "musica": "Old schoolyard", "cantor": "Cat Stevens", "aula": "133", "ano": "1977"}, {"folha": "219", "musica": "On and on", "cantor": "Stephen Bishop", "aula": "204", "ano": "1977"}, {"folha": "220", "musica": "Old time reloving", "cantor": "Ringo Starr", "aula": "215", "ano": "1976"}, {"folha": "221", "musica": "Outside help", "cantor": "Johnny Rivers", "aula": "251", "ano": "1977"}, {"folha": "222", "musica": "Our love don't throw it all away", "cantor": "Andy Gibb", "aula": "293", "ano": "1978"}, {"folha": "223", "musica": "One fine day", "cantor": "Rita Coolidge", "aula": "300", "ano": "1979"}, {"folha": "224", "musica": "Oh Susie", "cantor": "Secret Service", "aula": "330", "ano": "1979"}, {"folha": "225", "musica": "Only you", "cantor": "Maggie Macneal", "aula": "338", "ano": "1974"}, {"folha": "226", "musica": "Puppy love", "cantor": "Paul Anka", "aula": "61", "ano": "1960"}, {"folha": "227", "musica": "Pillow talk", "cantor": "Doris Day", "aula": "111", "ano": "1959"}, {"folha": "228", "musica": "Promised land", "cantor": "Elvis Presley", "aula": "113", "ano": "1974"}, {"folha": "229", "musica": "Poor side of town", "cantor": "Johnny Rivers", "aula": "145", "ano": "1966"}, {"folha": "230", "musica": "Play me", "cantor": "Neil Diamond", "aula": "181", "ano": "1972"}, {"folha": "231", "musica": "Part-time love", "cantor": "Elton John", "aula": "260", "ano": "1978"}, {"folha": "232", "musica": "Rock on baby rock on", "cantor": "Betty Wright", "aula": "77", "ano": "1975"}, {"folha": "233", "musica": "Rock and roll lullaby", "cantor": "B.J. Thomas", "aula": "101", "ano": "1972"}, {"folha": "234", "musica": "Return to sender", "cantor": "Elvis Presley", "aula": "125", "ano": "1962"}, {"folha": "235", "musica": "Razzle dazzle", "cantor": "Bing Crosby", "aula": "154", "ano": "1975"}, {"folha": "236", "musica": "Rendezvous", "cantor": "Tina Charles", "aula": "158", "ano": "1976"}, {"folha": "237", "musica": "Rose garden", "cantor": "Lynn Anderson", "aula": "170", "ano": "1970"}, {"folha": "238", "musica": "River road", "cantor": "Crystal Gayle", "aula": "175", "ano": "1977"}, {"folha": "239", "musica": "Rock and roll is here to stay", "cantor": "Sha-na-na", "aula": "265", "ano": "1958"}, {"folha": "240", "musica": "Reunion", "cantor": "Bobby Goldsboro", "aula": "275", "ano": "1977"}, {"folha": "241", "musica": "Ready to take a chance", "cantor": "Barry Manilow", "aula": "287", "ano": "1978"}, {"folha": "242", "musica": "San Francisco", "cantor": "Scott McKenzie", "aula": "3", "ano": "1967"}, {"folha": "243", "musica": "Smile", "cantor": "Eric Clapton", "aula": "6", "ano": "1975"}, {"folha": "244", "musica": "Stand by me", "cantor": "John Lennon", "aula": "8", "ano": "1975"}, {"folha": "245", "musica": "Since I loved you last", "cantor": "Tom Jones", "aula": "12", "ano": "1967"}, {"folha": "246", "musica": "Stop to start", "cantor": "Blue Magic", "aula": "22", "ano": "1974"}, {"folha": "247", "musica": "Show and tell", "cantor": "Engelbert Humperdinck", "aula": "30", "ano": "1973"}, {"folha": "248", "musica": "Safari", "cantor": "Peter Cowap", "aula": "35", "ano": "1975"}, {"folha": "249", "musica": "Sailing", "cantor": "Rod Stewart", "aula": "43", "ano": "1975"}, {"folha": "250", "musica": "Save your kisses for me", "cantor": "Brotherhood of Man", "aula": "44", "ano": "1976"}, {"folha": "251", "musica": "Smoke gets in your eyes", "cantor": "The Platters", "aula": "45", "ano": "1933"}, {"folha": "252", "musica": "Summer Sand", "cantor": "Tony Orlando", "aula": "53", "ano": "1973"}, {"folha": "253", "musica": "Something stupid", "cantor": "Frank Sinatra", "aula": "60", "ano": "1967"}, {"folha": "254", "musica": "Send in the clowns", "cantor": "Ray Conniff", "aula": "78", "ano": "1973"}, {"folha": "255", "musica": "Something strange", "cantor": "Dave Maclean", "aula": "95", "ano": "1975"}, {"folha": "256", "musica": "Stoney", "cantor": "Lobo", "aula": "97", "ano": "1971"}, {"folha": "257", "musica": "Standing at the end of the line", "cantor": "Lobo", "aula": "110", "ano": "1972"}, {"folha": "258", "musica": "Swearing to God", "cantor": "Frankie Valli", "aula": "118", "ano": "1975"}, {"folha": "259", "musica": "Sweet sweet smile", "cantor": "Carpenters", "aula": "127", "ano": "1977"}, {"folha": "260", "musica": "See you when I get there", "cantor": "Lou Rawls", "aula": "140", "ano": "1976"}, {"folha": "261", "musica": "Shame and scandal in the family", "cantor": "The Stylistics", "aula": "143", "ano": "1975"}, {"folha": "262", "musica": "Summer rain", "cantor": "Johnny Rivers", "aula": "153", "ano": "1968"}, {"folha": "263", "musica": "Song sung blue", "cantor": "Neil Diamond", "aula": "165", "ano": "1972"}, {"folha": "264", "musica": "Slip slidin away", "cantor": "Simon and Garfunkel", "aula": "178", "ano": "1977"}, {"folha": "265", "musica": "Sweet caroline", "cantor": "Neil Diamond", "aula": "186", "ano": "1969"}, {"folha": "266", "musica": "Swaying to the music", "cantor": "Johnny Rivers", "aula": "196", "ano": "1977"}, {"folha": "267", "musica": "Stayin alive", "cantor": "Bee Gees", "aula": "203", "ano": "1977"}, {"folha": "268", "musica": "Self pity", "cantor": "Lucifer", "aula": "210", "ano": "1978"}, {"folha": "269", "musica": "Shadow dancing", "cantor": "Andy Gibb", "aula": "218", "ano": "1978"}, {"folha": "270", "musica": "Stargazer", "cantor": "Frank Sinatra", "aula": "225", "ano": "1976"}, {"folha": "271", "musica": "San Francisco Nights", "cantor": "Harpo", "aula": "227", "ano": "1967"}, {"folha": "272", "musica": "San Francisco Bay Blues", "cantor": "The Brothers Four", "aula": "236", "ano": "1961"}, {"folha": "273", "musica": "Summer nights", "cantor": "John Travolta", "aula": "241", "ano": "1978"}, {"folha": "274", "musica": "Sandy", "cantor": "John Travolta", "aula": "245", "ano": "1978"}, {"folha": "275", "musica": "She's always a woman", "cantor": "Billy Joel", "aula": "255", "ano": "1977"}, {"folha": "276", "musica": "Stumblin in", "cantor": "Suzy Quatro", "aula": "279", "ano": "1978"}, {"folha": "277", "musica": "Songbird", "cantor": "Barbra Streisand", "aula": "298", "ano": "1978"}, {"folha": "278", "musica": "Still", "cantor": "Commodores", "aula": "310", "ano": "1979"}, {"folha": "279", "musica": "Shadows in the moonlight", "cantor": "Anne Murray", "aula": "318", "ano": "1979"}, {"folha": "280", "musica": "Sun is here", "cantor": "Sun", "aula": "320", "ano": "1978"}, {"folha": "281", "musica": "September morn", "cantor": "Neil Diamond", "aula": "325", "ano": "1979"}, {"folha": "282", "musica": "Scotch and Soda", "cantor": "Manhattan Transfer", "aula": "331", "ano": "1975"}, {"folha": "283", "musica": "Stagger Lee", "cantor": "Neil Diamond", "aula": "336", "ano": "1973"}, {"folha": "284", "musica": "Sneaking out the back door", "cantor": "Crystal Gayle", "aula": "343", "ano": "1978"}, {"folha": "285", "musica": "She's like the wind", "cantor": "Patrick Swayze", "aula": "360", "ano": "1987"}, {"folha": "286", "musica": "Tears", "cantor": "Robin McNay", "aula": "7", "ano": "1975"}, {"folha": "287", "musica": "This masquerade", "cantor": "Carpenters", "aula": "10", "ano": "1976"}, {"folha": "288", "musica": "The end of the world", "cantor": "Geno Washington", "aula": "26", "ano": "1963"}, {"folha": "289", "musica": "Thankful for you", "cantor": "Engelbert Humperdinck", "aula": "29", "ano": "1976"}, {"folha": "290", "musica": "Treat her gently", "cantor": "Harry Nilsson", "aula": "36", "ano": "1975"}, {"folha": "291", "musica": "This is it", "cantor": "Melba Moore", "aula": "47", "ano": "1976"}, {"folha": "292", "musica": "Today's the day", "cantor": "America", "aula": "51", "ano": "1976"}, {"folha": "293", "musica": "True love", "cantor": "George Harrison", "aula": "70", "ano": "1976"}, {"folha": "294", "musica": "The most beautiful girl", "cantor": "Ray Conniff", "aula": "84", "ano": "1973"}, {"folha": "295", "musica": "Torn between two lovers", "cantor": "Mary MacGregor", "aula": "94", "ano": "1976"}, {"folha": "296", "musica": "Theme from a Summer place", "cantor": "Percy Faith", "aula": "99", "ano": "1960"}, {"folha": "297", "musica": "There's a honky tonk angel", "cantor": "Elvis Presley", "aula": "115", "ano": "1974"}, {"folha": "298", "musica": "The shadow of your smile", "cantor": "Tony Bennett", "aula": "115", "ano": "1965"}, {"folha": "299", "musica": "The air that I breathe", "cantor": "The Hollies", "aula": "179", "ano": "1974"}, {"folha": "300", "musica": "The name of the game", "cantor": "ABBA", "aula": "199", "ano": "1977"}, {"folha": "301", "musica": "Three times a lady", "cantor": "Commodores", "aula": "206", "ano": "1978"}, {"folha": "302", "musica": "The closer I get to you", "cantor": "Roberta Flack", "aula": "208", "ano": "1978"}, {"folha": "303", "musica": "Thank you for being a friend", "cantor": "Andrew Gold", "aula": "221", "ano": "1978"}, {"folha": "304", "musica": "The one and only", "cantor": "Gladys Knight", "aula": "240", "ano": "1973"}, {"folha": "305", "musica": "Those magic changes", "cantor": "Sha-na-na", "aula": "253", "ano": "1978"}, {"folha": "306", "musica": "Too much heaven", "cantor": "Bee Gees", "aula": "264", "ano": "1978"}, {"folha": "307", "musica": "Too much too little too late", "cantor": "Johnny Mathis", "aula": "268", "ano": "1978"}, {"folha": "308", "musica": "The first time ever I saw your face", "cantor": "Roberta Flack", "aula": "268", "ano": "1972"}, {"folha": "309", "musica": "There's always a goodbye", "cantor": "Randy Richards", "aula": "273", "ano": "1978"}, {"folha": "310", "musica": "That's what I want", "cantor": "Square", "aula": "278", "ano": "1978"}, {"folha": "311", "musica": "Tragedy", "cantor": "Bee Gees", "aula": "290", "ano": "1979"}, {"folha": "312", "musica": "Time passages", "cantor": "Al Stewart", "aula": "297", "ano": "1978"}, {"folha": "313", "musica": "The gambler", "cantor": "Kenny Rogers", "aula": "314", "ano": "1978"}, {"folha": "314", "musica": "The best days of my life", "cantor": "Rod Stewart", "aula": "345", "ano": "1988"}, {"folha": "315", "musica": "Venus", "cantor": "Lipstique", "aula": "270", "ano": "1969"}, {"folha": "316", "musica": "Stupid cupid", "cantor": "Neil Sedaka", "aula": "63", "ano": "1958"}, {"folha": "317", "musica": "Your love broke through", "cantor": "Debby Boone", "aula": "333", "ano": "1979"}, {"folha": "318", "musica": "Yes I'm ready", "cantor": "Teri DeSario", "aula": "354", "ano": "1979"}, {"folha": "319", "musica": "Zodiac", "cantor": "Roberta Flack", "aula": "148", "ano": "1973"}, {"folha": "320", "musica": "What's happenin baby", "cantor": "Stylistics", "aula": "2", "ano": "1974"}, {"folha": "321", "musica": "Writing", "cantor": "Elton John", "aula": "25", "ano": "1973"}, {"folha": "322", "musica": "Who loves you", "cantor": "Four Seasons", "aula": "57", "ano": "1975"}, {"folha": "323", "musica": "Where do I go", "cantor": "Julius La Rosa", "aula": "87", "ano": "1968"}, {"folha": "324", "musica": "Wooly bully boogie", "cantor": "Oscar Benton", "aula": "139", "ano": "1965"}, {"folha": "325", "musica": "Which way you going Billy", "cantor": "Donny and Marie Osmond", "aula": "152", "ano": "1973"}, {"folha": "326", "musica": "We can make it", "cantor": "Lobo", "aula": "166", "ano": "1973"}, {"folha": "327", "musica": "We got love", "cantor": "Donnie and Marie Osmond", "aula": "177", "ano": "1975"}, {"folha": "328", "musica": "We're all alone", "cantor": "Rita Coolidge", "aula": "190", "ano": "1976"}, {"folha": "329", "musica": "When I wanted you", "cantor": "Addrisi Brothers", "aula": "193", "ano": "1977"}, {"folha": "330", "musica": "We'll never have to say goodbye again", "cantor": "England Dan and John Ford Coley", "aula": "212", "ano": "1978"}, {"folha": "331", "musica": "Watching over you", "cantor": "Emerson Lake and Palmer", "aula": "219", "ano": "1977"}, {"folha": "332", "musica": "Wichita lineman", "cantor": "The Brothers Four", "aula": "226", "ano": "1968"}, {"folha": "333", "musica": "Whenever I'm away from you", "cantor": "John Travolta", "aula": "235", "ano": "1976"}, {"folha": "334", "musica": "Where have you been all of my life", "cantor": "Rick Clark", "aula": "261", "ano": "1960"}, {"folha": "335", "musica": "What a wonderful world", "cantor": "Art Garfunkel", "aula": "266", "ano": "1978"}, {"folha": "336", "musica": "Where did our love go", "cantor": "Ringo Starr", "aula": "276", "ano": "1977"}, {"folha": "337", "musica": "Who's loving you", "cantor": "Dobie Gray", "aula": "307", "ano": "1970"}, {"folha": "338", "musica": "Why don't we try a slow dance", "cantor": "Barry Manilow", "aula": "312", "ano": "1979"}, {"folha": "339", "musica": "Where were you when I was falling in love", "cantor": "Lobo", "aula": "328", "ano": "1976"}, {"folha": "340", "musica": "Warm ride", "cantor": "Andy Gibb", "aula": "340", "ano": "1979"}, {"folha": "341", "musica": "We don't talk anymore", "cantor": "Cliff Richard", "aula": "353", "ano": "1979"}, {"folha": "342", "musica": "You're the first the last my everything", "cantor": "Barry White", "aula": "19", "ano": "1974"}, {"folha": "343", "musica": "You're sixteen", "cantor": "Ringo Starr", "aula": "48", "ano": "1973"}, {"folha": "344", "musica": "You can get it if you really want", "cantor": "Johnny Rivers", "aula": "75", "ano": "1970"}, {"folha": "345", "musica": "Young hearts run free", "cantor": "Candi Staton", "aula": "85", "ano": "1976"}, {"folha": "346", "musica": "You and me", "cantor": "Alice Cooper", "aula": "102", "ano": "1977"}, {"folha": "347", "musica": "You are my love", "cantor": "Liverpool Express", "aula": "108", "ano": "1976"}, {"folha": "348", "musica": "You make me feel like dancing", "cantor": "Leo Sayer", "aula": "119", "ano": "1976"}, {"folha": "349", "musica": "Yes sir I can boogie", "cantor": "Baccara", "aula": "123", "ano": "1977"}, {"folha": "350", "musica": "Your fairytale", "cantor": "Donna Summer", "aula": "150", "ano": "1976"}, {"folha": "351", "musica": "Year of the cat", "cantor": "Al Stewart", "aula": "185", "ano": "1976"}, {"folha": "352", "musica": "You're in my heart", "cantor": "Rod Stewart", "aula": "189", "ano": "1977"}, {"folha": "353", "musica": "You light up my life", "cantor": "Debby Boone", "aula": "198", "ano": "1977"}, {"folha": "354", "musica": "Your smiling face", "cantor": "James Taylor", "aula": "220", "ano": "1977"}, {"folha": "355", "musica": "You're the one that I want", "cantor": "John Travolta and Olivia Newton-John", "aula": "239", "ano": "1978"}, {"folha": "356", "musica": "YMCA", "cantor": "Village People", "aula": "248", "ano": "1978"}, {"folha": "357", "musica": "You don't bring me flowers", "cantor": "Barbra Streisand", "aula": "259", "ano": "1978"}, {"folha": "358", "musica": "You're too far away", "cantor": "David Castle", "aula": "289", "ano": "1977"}, {"folha": "359", "musica": "You're a very special part of me", "cantor": "Johnny Mathis", "aula": "299", "ano": "1978"}, {"folha": "360", "musica": "You decorated my life", "cantor": "Kenny Rogers", "aula": "322", "ano": "1978"}];
-
-  function carregarMusicas() {
-    todasMusicas     = MUSICAS_DATA;
-    musicasFiltradas = MUSICAS_DATA.slice();
-    document.getElementById('headerSub').textContent = todasMusicas.length + ' músicas • 1933–1988';
-    renderLista(todasMusicas);
-
-    var t;
-    document.getElementById('searchInput').addEventListener('input', function() {
-      clearTimeout(t);
-      t = setTimeout(executarBusca, 200);
-      document.getElementById('clearBtn').style.display = this.value ? 'block' : 'none';
-    });
-  }
-
-  // ── Filtro / Busca ────────────────────────────────────
-  function setFiltro(campo, el) {
-    filtroAtivo = campo;
-    document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
-    el.classList.add('active');
-    executarBusca();
-  }
-  function clearSearch() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('clearBtn').style.display = 'none';
-    terminoBusca = '';
-    executarBusca();
-  }
-  function executarBusca() {
-    terminoBusca = document.getElementById('searchInput').value.toLowerCase().trim();
-    musicasFiltradas = !terminoBusca ? todasMusicas.slice() : todasMusicas.filter(function(m) {
-      if (filtroAtivo === 'musica') return m.musica.toLowerCase().includes(terminoBusca);
-      if (filtroAtivo === 'cantor') return m.cantor.toLowerCase().includes(terminoBusca);
-      if (filtroAtivo === 'ano')    return m.ano.includes(terminoBusca);
-      return m.musica.toLowerCase().includes(terminoBusca) ||
-             m.cantor.toLowerCase().includes(terminoBusca) ||
-             m.ao.includes(terminoBusca);
-    });
-    renderLista(musicasFiltradas);
-  }
-
-  // ── Render ────────────────────────────────────────────
-  function hl(t) {
-    if (!terminoBusca || !t) return t;
-    return t.replace(new RegExp('(' + terminoBusca.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi'), '<mark>$1</mark>');
-  }
-  function renderLista(lista) {
-    var bar = document.getElementById('countBar');
-    var el  = document.getElementById('songList');
-    if (!lista.length) {
-      bar.textContent = 'Nenhum resultado';
-      el.innerHTML = '<div class="state-msg">🔍<br>Nada encontrado para "' + terminoBusca + '"</div>';
-      return;
-    }
-    bar.textContent = lista.length === todasMusicas.length
-      ? lista.length + ' músicas no total'
-      : lista.length + ' resultado' + (lista.length > 1 ? 's' : '');
-    var html = '';
-    lista.forEach(function(m, i) {
-      var mE = (m.musica||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      var cE = (m.cantor||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      html += '<div class="song-item" id="item-'+i+'">'
-        + '<div class="folha-badge">'+(m.folha||'')+'</div>'
-        + '<div class="song-body">'
-        + '<div class="song-title">'+hl(m.musica||'')+'</div>'
-        + '<div class="song-artist">'+hl(m.cantor||'')+'</div>'
-        + '<div class="song-tags"><span class="tag">Aula '+(m.aula||'')+'</span>'
-        + (m.ano?'<span class="tag">'+m.ano+'</span>':'')+'</div>'
-        + '</div>'
-        + '<button class="btn-play" id="btn-'+i+'" onclick="tocar('+i+',\''+mE+'\',\''+cE+'\')">▶</button>'
-        + '</div>';
-    });
-    el.innerHTML = html;
-  }
-
-  // ── Tocar via Spotify API direto do browser ───────────
-  function tocar(idx, musica, cantor) {
-    var btn = document.getElementById('btn-'+idx);
-    if (btn) { btn.textContent='⏳'; btn.classList.add('loading'); }
-    showToast('Buscando: ' + musica + '...');
-
-    // Busca a faixa
-    fetch('https://api.spotify.com/v1/search?q=' + encodeURIComponent(musica + ' ' + cantor) + '&type=track&limit=1', {
-      headers: { 'Authorization': 'Bearer ' + accessToken }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var items = data && data.tracks && data.tracks.items;
-      if (!items || !items.length) {
-        if (btn) { btn.textContent='▶'; btn.classList.remove('loading'); }
-        showToast('❌ Música não encontrada no Spotify');
-        return;
-      }
-      var track = items[0];
-      tocandoUrl = track.external_urls.spotify;
-      atualizarPlayer(track);
-      marcarTocando(idx);
-
-      // Toca no dispositivo ativo
-      return fetch('https://api.spotify.com/v1/me/player/play', {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uris: [track.uri] })
-      }).then(function(r) {
-        if (btn) { btn.textContent='▶'; btn.classList.remove('loading'); }
-        if (r.status === 200 || r.status === 204) {
-          showToast('▶ Tocando: ' + track.name);
-        } else {
-          // Abre no app Spotify
-          window.open(track.external_urls.spotify, '_blank');
-          showToast('Abrindo no Spotify: ' + track.name);
-        }
-      });
-    })
-    .catch(function(err) {
-      if (btn) { btn.textContent='▶'; btn.classList.remove('loading'); }
-      showToast('Erro: ' + err.message);
-    });
-  }
-
-  function atualizarPlayer(track) {
-    document.getElementById('npTitle').textContent  = track.name || '';
-    document.getElementById('npArtist').textContent = track.artists ? track.artists[0].name : '';
-    if (track.album && track.album.images && track.album.images[0])
-      document.getElementById('npImg').src = track.album.images[0].url;
-    document.getElementById('nowPlaying').classList.add('visible');
-  }
-  function marcarTocando(idx) {
-    document.querySelectorAll('.song-item').forEach(function(e){ e.classList.remove('playing'); });
-    var item = document.getElementById('item-'+idx);
-    if (item) item.classList.add('playing');
-  }
-  function abrirNoSpotify() { if (tocandoUrl) window.open(tocandoUrl,'_blank'); }
-
-  // ── Criar Playlist via Spotify API ───────────────────
-  function abrirModalPlaylist() {
-    var lista = musicasFiltradas.length ? musicasFiltradas : todasMusicas;
-    document.getElementById('playlistNome').value = terminoBusca ? 'English - '+terminoBusca : 'My English Songs';
-    document.getElementById('modalDesc').textContent = Math.min(lista.length,50)+' músicas';
-    document.getElementById('modalOverlay').classList.add('open');
-  }
-  function fecharModal() { document.getElementById('modalOverlay').classList.remove('open'); }
-
-  function confirmarCriarPlaylist() {
-    var nome  = document.getElementById('playlistNome').value.trim() || 'My English Songs';
-    var lista = (musicasFiltradas.length ? musicasFiltradas : todasMusicas).slice(0,50);
-    fecharModal();
-    var btn = document.getElementById('btnPlaylist');
-    btn.disabled = true; btn.textContent = '⏳ Criando...';
-    showToast('Criando playlist...');
-
-    // Pega user ID
-    fetch('https://api.spotify.com/v1/me', { headers: { 'Authorization': 'Bearer ' + accessToken } })
-    .then(function(r) { return r.json(); })
-    .then(function(me) {
-      return fetch('https://api.spotify.com/v1/users/' + me.id + '/playlists', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nome, description: 'My English Songs', public: false })
-      }).then(function(r) { return r.json(); });
-    })
-    .then(function(pl) {
-      if (!pl.id) throw new Error('Erro ao criar playlist');
-      // Busca URIs em sequência
-      return buscarUris(lista, 0, [], pl);
-    })
-    .then(function(resultado) {
-      btn.disabled = false; btn.innerHTML = '🎶 Criar Playlist';
-      showToast('✅ Playlist criada com ' + resultado.total + ' músicas!');
-      setTimeout(function(){ window.open(resultado.url,'_blank'); }, 1500);
-    })
-    .catch(function(err) {
-      btn.disabled = false; btn.innerHTML = '🎶 Criar Playlist';
-      showToast('❌ ' + err.message);
-    });
-  }
-
-  function buscarUris(lista, idx, uris, pl) {
-    if (idx >= lista.length) {
-      // Adiciona todas as faixas
-      return fetch('https://api.spotify.com/v1/playlists/' + pl.id + '/tracks', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uris: uris })
-      }).then(function() {
-        return { total: uris.length, url: pl.external_urls.spotify };
-      });
-    }
-    return fetch('https://api.spotify.com/v1/search?q=' + encodeURIComponent(lista[idx].musica + ' ' + lista[idx].cantor) + '&type=track&limit=1', {
-      headers: { 'Authorization': 'Bearer ' + accessToken }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.tracks && data.tracks.items && data.tracks.items.length) {
-        uris.push(data.tracks.items[0].uri);
-      }
-      return new Promise(function(resolve) {
-        setTimeout(function() { resolve(buscarUris(lista, idx+1, uris, pl)); }, 100);
-      });
-    });
-  }
-
-  function verPlanilha() {
-    window.open('https://docs.google.com/spreadsheets/d/199kQDNc1_wFO-EF1qxcGfZCTWwXocAHqqkqr0Omyk3w/edit','_blank');
-  }
-
-  function showToast(msg) {
-    var t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 3500);
-  }
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
 </script>
 </body>
 </html>
